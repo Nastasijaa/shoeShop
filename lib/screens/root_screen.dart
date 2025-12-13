@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import 'package:skriptarnica/screens/Home_screen.dart';
-import 'package:skriptarnica/screens/cart_screen.dart';
-import 'package:skriptarnica/screens/profile_screen.dart';
-import 'package:skriptarnica/screens/search_screen.dart';
+import 'package:shoeshop/screens/Home_screen.dart';
+import 'package:shoeshop/screens/cart_screen.dart';
+import 'package:shoeshop/screens/profile_screen.dart';
+import 'package:shoeshop/screens/search_screen.dart';
 //stateful jer menja stanje ostali screen su stateless jer ne menjaju druga stanja
 
 class RootScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class RootScreen extends StatefulWidget {
 
 class _MyWidgetState extends State<RootScreen> {
   late List <Widget> screens; //late jer znamo da cemo ga sigurno koristiit
-  int currentScreen=3; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
+  int currentScreen=0; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
   late PageController controller;
 
   @override

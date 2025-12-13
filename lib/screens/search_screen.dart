@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skriptarnica/widgets/title_text.dart';
+import 'package:shoeshop/widgets/title_text.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
@@ -7,7 +7,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: TitelesTextWidget(label: "Srecah Screen"),)
+      body: Center(child: TitelesTextWidget(label: "Sreach Screen"),)
     );
   }
 }

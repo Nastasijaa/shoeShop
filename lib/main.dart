@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:skriptarnica/consts/theme_data.dart';
-import 'package:skriptarnica/providers/theme_provider.dart';
-import 'package:skriptarnica/screens/Home_screen.dart';
-import 'package:skriptarnica/screens/root_screen.dart';
+import 'package:shoeshop/consts/theme_data.dart';
+import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/screens/root_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,11 +23,13 @@ class MyApp extends StatelessWidget {
       child: Consumer <ThemeProvider>(
         builder: (context, themeProvider, child){
        return MaterialApp(
-          title: 'FTN Skriptarnica',
+          title: 'ShoeShop',
           theme: 
            Styles.themeData(isDarkTheme: themeProvider.getIsDarkTheme, context: context
            ),
           home: const RootScreen(),
+  
+
         );
         },
       ),

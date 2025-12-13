@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:skriptarnica/providers/theme_provider.dart';
-import 'package:skriptarnica/widgets/subtitle_text.dart';
-import 'package:skriptarnica/widgets/title_text.dart';
+import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/widgets/subtitle_text.dart';
+import 'package:shoeshop/widgets/title_text.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
