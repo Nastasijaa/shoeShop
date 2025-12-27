@@ -25,7 +25,8 @@ class ProfileScreen extends StatelessWidget {
           "Profile Screen",
         ),
       ),
-      body: Column(
+      body: SingleChildScrollView(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Visibility(
@@ -155,6 +156,7 @@ class ProfileScreen extends StatelessWidget {
           )
         ],
       ),
+    ),
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/screens/Home_screen.dart';
-import 'package:shoeshop/screens/cart_screen.dart';
+import 'package:shoeshop/screens/cart/cart_screen.dart';
 import 'package:shoeshop/screens/profile_screen.dart';
 import 'package:shoeshop/screens/search_screen.dart';
 //stateful jer menja stanje ostali screen su stateless jer ne menjaju druga stanja
@@ -15,7 +16,7 @@ class RootScreen extends StatefulWidget {
 
 class _MyWidgetState extends State<RootScreen> {
   late List <Widget> screens; //late jer znamo da cemo ga sigurno koristiit
-  int currentScreen=0; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
+  int currentScreen=1; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
   late PageController controller;
 
   @override
@@ -61,7 +62,12 @@ class _MyWidgetState extends State<RootScreen> {
           ),
            NavigationDestination(
         selectedIcon: Icon(IconlyBold.bag2),  //da e vidi razlika kada kliknemo na nju boja npr 
-        icon: Icon(IconlyLight.bag2),
+        icon: Badge
+        (backgroundColor: AppColors.darkPrimary,
+        label: Text("5"),
+        child: Icon(IconlyLight.bag2),
+        ),
+        
         label: "Cart",
           ),
            NavigationDestination(
