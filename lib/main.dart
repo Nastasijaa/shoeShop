@@ -8,6 +8,7 @@ import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
+import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 
 void main() {
@@ -25,6 +26,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             return ThemeProvider();
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            return WishlistProvider();
           },
         ),
       ],

@@ -35,7 +35,9 @@ class _SearchScreenState extends State<SearchScreen> {
         appBar: AppBar(
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset("${AssetsMenager.imagePath}/logo.png"),
+              child: ClipOval(
+                child: Image.asset(AssetsMenager.logo),
+              ),
           ),
           title: const Text("ShoeShop"),
         ),
@@ -75,7 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                   builder: (context, index) {
-                    return const ProductWidget();
+                    return ProductWidget(productId: "search_$index");
                   },
                   itemCount: 200,
                   crossAxisCount: 2,

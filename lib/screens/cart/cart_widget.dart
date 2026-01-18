@@ -9,7 +9,9 @@ import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
 class CartWidget extends StatelessWidget {
-  const CartWidget({super.key});
+  const CartWidget({super.key, required this.productId});
+
+  final String productId;
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +54,18 @@ class CartWidget extends StatelessWidget {
                                 color: AppColors.darkPrimary,
                               ),
                             ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const HeartButtonWidget(),
-                            ),
+                            HeartButtonWidget(productId: productId),
                           ],
                         ),
                       ],
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SubtitleTextWidget(
+                        label: "ID: $productId",
+                        fontSize: 14,
+                        color: Colors.red,
+                      ),
                     ),
                     Row(
                       // mainAxisAlignment: MainAxisAlignment.spaceBetween,

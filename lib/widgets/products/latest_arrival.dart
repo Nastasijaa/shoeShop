@@ -4,11 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 
 class LatestArrivalProductsWidget extends StatelessWidget {
-  const LatestArrivalProductsWidget({super.key});
+  const LatestArrivalProductsWidget({
+    super.key,
+    required this.productId,
+  });
+
+  final String productId;
 
   @override
   Widget build(BuildContext context) {
@@ -48,13 +54,41 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                     FittedBox(
                       child: Row(
                         children: [
-                          const HeartButtonWidget(),
+                          HeartButtonWidget(productId: productId),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              if (await UserPrefs.isGuest()) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Guest users cannot like, add to cart, or purchase. Please log in.",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                            },
                             icon: const Icon(Icons.add_shopping_cart),
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              if (await UserPrefs.isGuest()) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Guest users cannot like, add to cart, or purchase. Please log in.",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                            },
                             icon: const Icon(Icons.add_shopping_cart),
                           ),
                         ],

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:shoeshop/consts/validator.dart';
 import 'package:shoeshop/screens/auth/register.dart';
+import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/auth/google_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
@@ -48,6 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginFct() async {
     final isValid = _formkey.currentState!.validate();
     FocusScope.of(context).unfocus();
+    if (!isValid) {
+      return;
+    }
+    final email = _emailController.text.trim();
+    final nameFromEmail = email.contains('@') ? email.split('@').first : email;
+    await UserPrefs.saveUser(name: nameFromEmail, email: email);
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushReplacementNamed(RootScreen.routeName);
   }
 
   @override
@@ -67,13 +79,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      "${AssetsMenager.imagePath}/logo.png",
-                      height: 60,
+                    ClipOval(
+                      child: Image.asset(
+                        AssetsMenager.logo,
+                        height: 60,
+                        width: 60,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
-                      "FTN Script Store",
+                      "Shoe Shop",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -84,7 +100,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: TitelesTextWidget(label: "Welcome back!"),
+                  child: SubtitleTextWidget(
+                    label: "We are glad you will become part of our story.",
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Form(
@@ -198,10 +216,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                   ),
-                                  child: const Text("Guest?"),
-                                  onPressed: () async {},
-                                ),
-                              ),
+                          child: const Text("Guest?"),
+                          onPressed: () async {
+                            await UserPrefs.setGuest();
+                            if (!mounted) {
+                              return;
+                            }
+                            Navigator.of(context).pushReplacementNamed(
+                              RootScreen.routeName,
+                            );
+                          },
+                        ),
+                      ),
                             ),
                           ],
                         ),
@@ -218,7 +244,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               textDecoration: TextDecoration.underline,
                             ),
                             onPressed: () {
-                              Navigator.of(context).pushNamed(RegisterScreen.routName);
+                              Navigator.of(context).pushNamed(
+                                RegisterScreen.routName,
+                              );
                             },
                           ),
                         ],

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shoeshop/consts/validator.dart';
+import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/services/my_app_function.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/auth/image_picker_widget.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
@@ -60,6 +62,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _registerFCT() async {
     final isValid = _formkey.currentState!.validate();
     FocusScope.of(context).unfocus();
+    if (!isValid) {
+      return;
+    }
+    await UserPrefs.saveUser(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      imagePath: _pickedImage?.path,
+    );
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushReplacementNamed(RootScreen.routeName);
   }
 
   Future<void> localImagePicker() async {
@@ -101,13 +115,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      "${AssetsMenager.imagePath}/logo.png",
-                      height: 60,
+                    ClipOval(
+                      child: Image.asset(
+                        AssetsMenager.logo,
+                        height: 60,
+                        width: 60,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
-                      "FTN Script Store",
+                      "Shoe Shop",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

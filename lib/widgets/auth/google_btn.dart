@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:ionicons/ionicons.dart';
 
 class GoogleButton extends StatelessWidget {
   const GoogleButton({super.key});
@@ -24,5 +25,3 @@ class GoogleButton extends StatelessWidget {
     );
   }
 }
-
-class Ionicons {}

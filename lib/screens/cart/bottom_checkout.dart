@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
@@ -37,7 +38,21 @@ color: AppColors.darkPrimary,
 ),
 ),
 ElevatedButton(
-onPressed: () {},
+onPressed: () async {
+  if (await UserPrefs.isGuest()) {
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Guest users cannot like, add to cart, or purchase. Please log in.",
+        ),
+      ),
+    );
+    return;
+  }
+},
 child: const Text("Checkout"),
 ),
 ],

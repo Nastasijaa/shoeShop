@@ -3,11 +3,54 @@ import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 
 class MyAppFunctions {
+  static Future<void> imagePickerDialog({
+    required BuildContext context,
+    required Future<void> Function() cameraFCT,
+    required Future<void> Function() galleryFCT,
+    required VoidCallback removeFCT,
+  }) async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Camera"),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await cameraFCT();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text("Gallery"),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await galleryFCT();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text("Remove"),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  removeFCT();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static Future<void> showErrorOrWarningDialog({
     required BuildContext context,
     required String subtitle,
     bool isError = true,
-    required Function fct,
+    required VoidCallback fct,
   }) async {
     await showDialog(
       context: context,
@@ -53,6 +96,9 @@ class MyAppFunctions {
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
+                      if (!isError) {
+                        fct();
+                      }
                     },
                     child: const SubtitleTextWidget(
                       label: "OK",
@@ -65,6 +111,16 @@ class MyAppFunctions {
           ),
         );
       },
+    );
+  }
+
+  static void showGuestOnlyMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Gost korisnici ne mogu da lajkuju, dodaju u korpu ili kupuju. Uloguj se.",
+        ),
+      ),
     );
   }
 }

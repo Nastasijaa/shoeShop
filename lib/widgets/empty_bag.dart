@@ -10,8 +10,10 @@ class EmptyBagWidget extends StatelessWidget {
     this.title,
     this.subtitle,
     this.buttonText,
+    this.onPressed,
   });
   final imagePath, title, subtitle, buttonText;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,7 @@ class EmptyBagWidget extends StatelessWidget {
             elevation: 0,
             backgroundColor: AppColors.darkPrimary,
           ),
-          onPressed: () {},
+          onPressed: onPressed,
           child: Text(buttonText, style: const TextStyle(color: Colors.white)),
         ),
       ],

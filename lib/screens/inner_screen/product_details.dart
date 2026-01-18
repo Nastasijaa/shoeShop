@@ -2,6 +2,7 @@ import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
@@ -31,7 +32,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           icon: const Icon(Icons.arrow_back_ios, size: 20),
         ),
         // automaticallyImplyLeading: false,
-        title: const Text("FTN Script Store"),
+        title: const Text("Shoe Shop"),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -75,6 +76,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const HeartButtonWidget(
+                          productId: "details_0",
                           bkgColor: AppColors.darkPrimary,
                         ),
                         const SizedBox(width: 20),
@@ -88,7 +90,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   borderRadius: BorderRadius.circular(30.0),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () async {
+                                if (await UserPrefs.isGuest()) {
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Guest users cannot like, add to cart, or purchase. Please log in.",
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              },
                               icon: const Icon(
                                 Icons.add_shopping_cart,
                                 color: Colors.white,

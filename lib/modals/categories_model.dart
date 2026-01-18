@@ -1,9 +1,15 @@
+import 'package:flutter/material.dart';
+
 class CategoriesModel {
-  final String id, name, image;
+  final String id;
+  final String name;
+  final String? image;
+  final IconData? icon;
 
   CategoriesModel({
     required this.id,
     required this.name,
-    required this.image,
+    this.image,
+    this.icon,
   });
 }

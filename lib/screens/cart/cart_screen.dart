@@ -25,7 +25,9 @@ class CartScreen extends StatelessWidget {
             appBar: AppBar(
               leading: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset("${AssetsMenager.imagePath}/logo.png"),
+                child: ClipOval(
+                  child: Image.asset(AssetsMenager.logo),
+                ),
               ),
               title: const Text("ShoeShop"),
               actions: [
@@ -39,7 +41,7 @@ class CartScreen extends StatelessWidget {
               //logika cart screena glde da li ima proizvoda ako ima vraca stranicu sa listom proizvoda
               itemCount: 10,
               itemBuilder: (context, index) {
-                return const CartWidget();
+                return CartWidget(productId: "cart_$index");
               },
             ),
           );

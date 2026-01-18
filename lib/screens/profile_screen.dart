@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
@@ -6,13 +8,47 @@ import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
+import 'package:shoeshop/screens/auth/login.dart';
+import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/services/my_app_function.dart';
+import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _name = "Guest";
+  String _email = "guest@example.com";
+  String _imagePath = "";
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await UserPrefs.getUser();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isLoggedIn =
+          (user['name']?.isNotEmpty ?? false) ||
+          (user['email']?.isNotEmpty ?? false);
+      _name = (user['name']?.isNotEmpty ?? false) ? user['name']! : _name;
+      _email = (user['email']?.isNotEmpty ?? false) ? user['email']! : _email;
+      _imagePath = user['imagePath'] ?? '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +57,9 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Image.asset(AssetsMenager.logo),
+          child: ClipOval(
+            child: Image.asset(AssetsMenager.logo),
+          ),
         ),
         title: const Text("Profile Screen"),
       ),
@@ -29,17 +67,8 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Visibility(
-              visible: false,
-              child: Padding(
-                padding: EdgeInsets.all(18.0),
-                child: TitelesTextWidget(
-                  label: "Please login to have unlimited access",
-                ),
-              ),
-            ),
             Visibility(
-              visible: true,
+              visible: _isLoggedIn,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10.0,
@@ -57,20 +86,23 @@ class ProfileScreen extends StatelessWidget {
                           color: Theme.of(context).colorScheme.surface,
                           width: 3,
                         ),
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                            "https://cdn.pixabay.com/photo/2017/11/10/05/48/user-2935527_1280.png",
-                          ),
+                        image: DecorationImage(
+                          image: _imagePath.isNotEmpty
+                              ? FileImage(File(_imagePath))
+                              : const NetworkImage(
+                                    "https://cdn.pixabay.com/photo/2017/11/10/05/48/user-2935527_1280.png",
+                                  )
+                                  as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TitelesTextWidget(label: "Nastasija Susilovic"),
-                        SubtitleTextWidget(label: "nastja.susilovic@uns.ac.rs"),
+                        TitelesTextWidget(label: _name),
+                        SubtitleTextWidget(label: _email),
                       ],
                     ),
                   ],
@@ -146,17 +178,43 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                icon: const Icon(Icons.login, color: Colors.white),
-                label: const Text(
-                  "Login",
-                  style: TextStyle(color: Colors.white),
+                icon: Icon(
+                  _isLoggedIn ? Icons.logout : Icons.login,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  _isLoggedIn ? "Logout" : "Login",
+                  style: const TextStyle(color: Colors.white),
                 ),
                 onPressed: () async {
+                  if (!_isLoggedIn) {
+                    if (!mounted) {
+                      return;
+                    }
+                    Navigator.of(context).pushReplacementNamed(
+                      LoginScreen.routeName,
+                    );
+                    return;
+                  }
                   await MyAppFunctions.showErrorOrWarningDialog(
                     context: context,
-                    subtitle: "Are you sure you want to signout?",
+                    subtitle: "Are you sure you want to sign out?",
                     isError: false,
-                    fct: () {},
+                    fct: () {
+                      UserPrefs.clearUser().then((_) {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _isLoggedIn = false;
+                          _name = "Guest";
+                          _email = "guest@example.com";
+                        });
+                        Navigator.of(context).pushReplacementNamed(
+                          RootScreen.routeName,
+                        );
+                      });
+                    },
                   );
                 },
               ),
