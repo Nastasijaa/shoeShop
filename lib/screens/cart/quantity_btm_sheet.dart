@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 
 class QuantitySheetBottomWidget extends StatelessWidget {
-  const QuantitySheetBottomWidget ({super.key});
+  const QuantitySheetBottomWidget({
+    super.key,
+    required this.currentQuantity,
+  });
+
+  final int currentQuantity;
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +35,19 @@ child: ListView.builder(
 // shrinkWrap: true,
 itemCount: 25,
 itemBuilder: (context, index) {
+final qty = index + 1;
 return InkWell(
 onTap: () {
 log("index $index");
+Navigator.pop(context, qty);
 },
 child: Center(
 child: Padding(
 padding: const EdgeInsets.all(4.0),
-child: SubtitleTextWidget(label: "${index + 1}"),
+child: SubtitleTextWidget(
+  label: "$qty",
+  fontWeight: qty == currentQuantity ? FontWeight.bold : FontWeight.normal,
+),
 )),
 );
 }),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/screens/cart/checkout_screen.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
@@ -52,6 +53,10 @@ onPressed: () async {
     );
     return;
   }
+  if (!context.mounted) {
+    return;
+  }
+  Navigator.pushNamed(context, CheckoutScreen.routeName);
 },
 child: const Text("Checkout"),
 ),

@@ -4,6 +4,7 @@ import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
+import 'package:shoeshop/widgets/products/product_widget.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
@@ -129,6 +130,27 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   const SizedBox(height: 15),
                   SubtitleTextWidget(label: "Description" * 15),
+                  const SizedBox(height: 30),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: TitelesTextWidget(label: "Recently viewed"),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: size.height * 0.34,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 6,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          width: size.width * 0.6,
+                          child: ProductWidget(productId: "recent_$index"),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),

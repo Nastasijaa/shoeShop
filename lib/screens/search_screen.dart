@@ -13,9 +13,21 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late TextEditingController searchTextController;
+  late List<_SearchProduct> _allProducts;
+  late List<_SearchProduct> _filteredProducts;
   @override //da stalnoučitava
   void initState() {
     searchTextController = TextEditingController();
+    _allProducts = List.generate(
+      200,
+      (index) => _SearchProduct(
+        id: "search_$index",
+        title: "Title $index",
+        description:
+            "Description for product $index with extra details for searching",
+      ),
+    );
+    _filteredProducts = _allProducts;
     super.initState();
   }
 
@@ -55,6 +67,9 @@ class _SearchScreenState extends State<SearchScreen> {
                       //setState(() {
                       FocusScope.of(context).unfocus();
                       searchTextController.clear();
+                      setState(() {
+                        _filteredProducts = _allProducts;
+                      });
                       //});
                     },
                     child: const Icon(
@@ -64,7 +79,25 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
                 onChanged: (value) {
-                  // log("value of the text is $value");
+                  final query = value.trim().toLowerCase();
+                  if (query.isEmpty) {
+                    setState(() {
+                      _filteredProducts = _allProducts;
+                    });
+                    return;
+                  }
+                  final words = query
+                      .split(RegExp(r"\s+"))
+                      .where((word) => word.isNotEmpty)
+                      .toList(growable: false);
+                  setState(() {
+                    _filteredProducts = _allProducts.where((product) {
+                      final haystack =
+                          "${product.title} ${product.description}"
+                              .toLowerCase();
+                      return words.every(haystack.contains);
+                    }).toList(growable: false);
+                  });
                 },
                 onSubmitted: (value) {
                   // log("value of the text is $value");
@@ -77,9 +110,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                   builder: (context, index) {
-                    return ProductWidget(productId: "search_$index");
+                    return ProductWidget(
+                      productId: _filteredProducts[index].id,
+                    );
                   },
-                  itemCount: 200,
+                  itemCount: _filteredProducts.length,
                   crossAxisCount: 2,
                 ),
               ),
@@ -89,4 +124,16 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+}
+
+class _SearchProduct {
+  const _SearchProduct({
+    required this.id,
+    required this.title,
+    required this.description,
+  });
+
+  final String id;
+  final String title;
+  final String description;
 }

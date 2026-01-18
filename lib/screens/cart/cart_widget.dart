@@ -8,10 +8,17 @@ import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
-class CartWidget extends StatelessWidget {
+class CartWidget extends StatefulWidget {
   const CartWidget({super.key, required this.productId});
 
   final String productId;
+
+  @override
+  State<CartWidget> createState() => _CartWidgetState();
+}
+
+class _CartWidgetState extends State<CartWidget> {
+  int _quantity = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +61,7 @@ class CartWidget extends StatelessWidget {
                                 color: AppColors.darkPrimary,
                               ),
                             ),
-                            HeartButtonWidget(productId: productId),
+                            HeartButtonWidget(productId: widget.productId),
                           ],
                         ),
                       ],
@@ -62,7 +69,7 @@ class CartWidget extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: SubtitleTextWidget(
-                        label: "ID: $productId",
+                        label: "ID: ${widget.productId}",
                         fontSize: 14,
                         color: Colors.red,
                       ),
@@ -77,7 +84,7 @@ class CartWidget extends StatelessWidget {
                         const Spacer(),
                         OutlinedButton.icon(
                           onPressed: () async {
-                            await showModalBottomSheet(
+                            final result = await showModalBottomSheet<int>(
                               backgroundColor: Theme.of(
                                 context,
                               ).scaffoldBackgroundColor,
@@ -89,12 +96,19 @@ class CartWidget extends StatelessWidget {
                               ),
                               context: context,
                               builder: (context) {
-                                return const QuantitySheetBottomWidget();
+                                return QuantitySheetBottomWidget(
+                                  currentQuantity: _quantity,
+                                );
                               },
                             );
+                            if (result != null && result != _quantity) {
+                              setState(() {
+                                _quantity = result;
+                              });
+                            }
                           },
                           icon: const Icon(IconlyLight.arrowDown2),
-                          label: const Text("Qty: 5"),
+                          label: Text("Qty: $_quantity"),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(width: 1),
                             shape: RoundedRectangleBorder(

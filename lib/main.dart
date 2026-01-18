@@ -4,6 +4,7 @@ import 'package:shoeshop/consts/theme_data.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/auth/register.dart';
+import 'package:shoeshop/screens/cart/checkout_screen.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
               RegisterScreen.routName: (context) => const RegisterScreen(),
               LoginScreen.routeName: (context) => const LoginScreen(),
               OrdersScreen.routeName: (context) => const OrdersScreen(),
+              CheckoutScreen.routeName: (context) => const CheckoutScreen(),
             },
           );
         },
