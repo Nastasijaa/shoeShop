@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/cart/checkout_screen.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
@@ -10,6 +12,7 @@ class CartBottomSheetWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
     return Container(
 decoration: BoxDecoration(
 color: Theme.of(context).scaffoldBackgroundColor,
@@ -24,15 +27,16 @@ height: kBottomNavigationBarHeight + 10,
 child: Row(
 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 children: [
-const Flexible(
+Flexible(
 child: Column(
 crossAxisAlignment: CrossAxisAlignment.start,
 children: [
 FittedBox(
 child: TitelesTextWidget(
-label: "Total (5 products/10 items)")),
+label:
+    "Total (${cartProvider.itemCount} products/${cartProvider.totalQuantity} items)")),
 SubtitleTextWidget(
-label: "2200 RSD",
+label: "${cartProvider.totalPrice.toStringAsFixed(2)} RSD",
 color: AppColors.darkPrimary,
 ),
 ],

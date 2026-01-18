@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/Home_screen.dart';
 import 'package:shoeshop/screens/cart/cart_screen.dart';
 import 'package:shoeshop/screens/profile_screen.dart';
@@ -35,6 +37,7 @@ class _MyWidgetState extends State<RootScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
     return Scaffold(
       body: PageView(
         physics: const NeverScrollableScrollPhysics(), //da s ene skroluje prstima
@@ -50,32 +53,39 @@ class _MyWidgetState extends State<RootScreen> {
       });
       controller.jumpToPage(currentScreen);
       },
-      destinations: const [
-        NavigationDestination(
-        selectedIcon: Icon(IconlyBold.home),  //da e vidi razlika kada kliknemo na nju boja npr 
-        icon: Icon(IconlyLight.home),
-        label: "Home",
-          ),
-           NavigationDestination(
-        selectedIcon: Icon(IconlyBold.search),  //da e vidi razlika kada kliknemo na nju boja npr 
-        icon: Icon(IconlyLight.search),
-        label: "Search",
-          ),
-           NavigationDestination(
-        selectedIcon: Icon(IconlyBold.bag2),  //da e vidi razlika kada kliknemo na nju boja npr 
-        icon: Badge
-        (backgroundColor: AppColors.darkPrimary,
-        label: Text("5"),
-        child: Icon(IconlyLight.bag2),
+      destinations: [
+        const NavigationDestination(
+          selectedIcon: Icon(
+            IconlyBold.home,
+          ), //da e vidi razlika kada kliknemo na nju boja npr
+          icon: Icon(IconlyLight.home),
+          label: "Home",
         ),
-        
-        label: "Cart",
-          ),
-           NavigationDestination(
-        selectedIcon: Icon(IconlyBold.profile),  //da e vidi razlika kada kliknemo na nju boja npr 
-        icon: Icon(IconlyLight.profile),
-        label: "Profile",
-          ),
+        const NavigationDestination(
+          selectedIcon: Icon(
+            IconlyBold.search,
+          ), //da e vidi razlika kada kliknemo na nju boja npr
+          icon: Icon(IconlyLight.search),
+          label: "Search",
+        ),
+        NavigationDestination(
+          selectedIcon: const Icon(IconlyBold.bag2),
+          icon: cartProvider.totalQuantity == 0
+              ? const Icon(IconlyLight.bag2)
+              : Badge(
+                  backgroundColor: AppColors.darkPrimary,
+                  label: Text(cartProvider.totalQuantity.toString()),
+                  child: const Icon(IconlyLight.bag2),
+                ),
+          label: "Cart",
+        ),
+        const NavigationDestination(
+          selectedIcon: Icon(
+            IconlyBold.profile,
+          ), //da e vidi razlika kada kliknemo na nju boja npr
+          icon: Icon(IconlyLight.profile),
+          label: "Profile",
+        ),
       ],
       ),
     );

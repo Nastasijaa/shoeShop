@@ -1,7 +1,9 @@
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/products/product_widget.dart';
@@ -20,6 +22,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    const title = "Title";
+    const price = 1550.0;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -53,7 +57,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Flexible(
                         child: Text(
-                          "Title" * 18,
+                          title * 18,
                           softWrap: true,
                           style: const TextStyle(
                             fontSize: 20,
@@ -105,6 +109,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   );
                                   return;
                                 }
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                context.read<CartProvider>().addItem(
+                                      id: "details_0",
+                                      title: title,
+                                      price: price,
+                                      imageUrl: AppConstants.imageUrl,
+                                    );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Added to cart"),
+                                  ),
+                                );
                               },
                               icon: const Icon(
                                 Icons.add_shopping_cart,

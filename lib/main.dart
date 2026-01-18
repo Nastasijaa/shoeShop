@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/theme_data.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/auth/register.dart';
 import 'package:shoeshop/screens/cart/checkout_screen.dart';
@@ -32,6 +33,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             return WishlistProvider();
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            return CartProvider();
           },
         ),
       ],

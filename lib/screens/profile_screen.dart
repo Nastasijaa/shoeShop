@@ -201,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     subtitle: "Are you sure you want to sign out?",
                     isError: false,
                     fct: () {
-                      UserPrefs.clearUser().then((_) {
+                      UserPrefs.setGuest().then((_) {
                         if (!mounted) {
                           return;
                         }

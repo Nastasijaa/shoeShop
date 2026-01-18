@@ -1,8 +1,10 @@
 
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
@@ -19,6 +21,8 @@ class LatestArrivalProductsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    const title = "Title";
+    const price = 1550.0;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
@@ -46,7 +50,7 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                   children: [
                     const SizedBox(height: 5),
                     Text(
-                      "Title" * 15,
+                      title * 15,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -70,24 +74,20 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                                 );
                                 return;
                               }
-                            },
-                            icon: const Icon(Icons.add_shopping_cart),
-                          ),
-                          IconButton(
-                            onPressed: () async {
-                              if (await UserPrefs.isGuest()) {
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Guest users cannot like, add to cart, or purchase. Please log in.",
-                                    ),
-                                  ),
-                                );
+                              if (!context.mounted) {
                                 return;
                               }
+                              context.read<CartProvider>().addItem(
+                                    id: productId,
+                                    title: title,
+                                    price: price,
+                                    imageUrl: AppConstants.imageUrl,
+                                  );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Added to cart"),
+                                ),
+                              );
                             },
                             icon: const Icon(Icons.add_shopping_cart),
                           ),

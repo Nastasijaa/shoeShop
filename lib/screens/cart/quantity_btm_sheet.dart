@@ -33,7 +33,7 @@ Expanded(
 child: ListView.builder(
 // physics: NeverScrollableScrollPhysics(),
 // shrinkWrap: true,
-itemCount: 25,
+itemCount: 10,
 itemBuilder: (context, index) {
 final qty = index + 1;
 return InkWell(

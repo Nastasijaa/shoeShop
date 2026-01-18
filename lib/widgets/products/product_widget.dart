@@ -1,7 +1,9 @@
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
@@ -21,6 +23,8 @@ class _ProductWidgetState extends State<ProductWidget> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    const title = "Title";
+    const price = 1200.0;
     return Padding(
       padding: const EdgeInsets.all(0.0),
       child: GestureDetector(
@@ -44,8 +48,8 @@ class _ProductWidgetState extends State<ProductWidget> {
                 children: [
                   Flexible(
                     flex: 5,
-                    child: TitelesTextWidget(
-                      label: "Title " * 10,
+                      child: TitelesTextWidget(
+                      label: "$title " * 10,
                       fontSize: 18,
                       maxLines: 2,
                     ),
@@ -62,10 +66,10 @@ class _ProductWidgetState extends State<ProductWidget> {
               padding: const EdgeInsets.all(2.0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: SubtitleTextWidget(
-                  label: "ID: ${widget.productId}",
-                  fontSize: 14,
-                  color: Colors.red,
+                      child: SubtitleTextWidget(
+                        label: "ID: ${widget.productId}",
+                        fontSize: 14,
+                        color: Colors.red,
                 ),
               ),
             ),
@@ -103,6 +107,20 @@ class _ProductWidgetState extends State<ProductWidget> {
                           );
                           return;
                         }
+                        if (!context.mounted) {
+                          return;
+                        }
+                        context.read<CartProvider>().addItem(
+                              id: widget.productId,
+                              title: title,
+                              price: price,
+                              imageUrl: AppConstants.imageUrl,
+                            );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Added to cart"),
+                          ),
+                        );
                       },
                       splashColor: Colors.blueGrey,
                       child: const Padding(
