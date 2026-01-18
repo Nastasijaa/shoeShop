@@ -8,6 +8,7 @@ import 'package:shoeshop/screens/search_screen.dart';
 //stateful jer menja stanje ostali screen su stateless jer ne menjaju druga stanja
 
 class RootScreen extends StatefulWidget {
+  static const String routeName = "/RootScreen";
   const RootScreen({super.key});
 
   @override
@@ -16,7 +17,7 @@ class RootScreen extends StatefulWidget {
 
 class _MyWidgetState extends State<RootScreen> {
   late List <Widget> screens; //late jer znamo da cemo ga sigurno koristiit
-  int currentScreen=1; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
+  int currentScreen=0; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
   late PageController controller;
 
   @override

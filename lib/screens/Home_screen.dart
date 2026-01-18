@@ -1,34 +1,92 @@
+import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/services/assets_menager.dart';
+import 'package:shoeshop/widgets/ctg_rounded_widget.dart';
+import 'package:shoeshop/widgets/products/latest_arrival.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
+//import 'package:card_swiper/card_swiper.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider= Provider.of<ThemeProvider>(context);
-    return Scaffold
-    (
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children:  [
-           const SubtitleTextWidget(label: "Hello"),
-           const TitelesTextWidget(label: "Hello this is me again"),
-            SwitchListTile(
-              title: Text(themeProvider.getIsDarkTheme ? "Dark Theme" : "Light Theme"),
-              value: themeProvider.getIsDarkTheme,
-              onChanged: (value){
-                themeProvider.setDarkTheme(themeValue: value);
-              }
-            )
-          ]
+    Size size = MediaQuery.of(context).size;
+    return Scaffold(
+      appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset("${AssetsMenager.imagePath}/logo.png"),
         ),
-      )
+        title: const Text("FTN Script Store"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 15),
+              SizedBox(
+                height: size.height * 0.25,
+                child: ClipRRect(
+                  // borderRadius: BorderRadius.circular(50),
+                  child: Swiper(
+                    autoplay: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Image.asset(
+                        AppConstants.bannersImages[index],
+                        fit: BoxFit.fill,
+                      );
+                    },
+                    itemCount: AppConstants.bannersImages.length,
+                    pagination: const SwiperPagination(
+                      // alignment: Alignment.center,
+                      builder: DotSwiperPaginationBuilder(
+                        activeColor: AppColors.darkPrimary,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15.0),
+              const TitelesTextWidget(label: "Latest arrival"),
+              const SizedBox(height: 15.0),
+              SizedBox(
+                height: size.height * 0.2,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 10,
+                  itemBuilder: (context, index) {
+                    return const LatestArrivalProductsWidget();
+                  },
+                ),
+              ),
+              const TitelesTextWidget(label: "Categories"),
+              const SizedBox(height: 15.0),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                children: List.generate(AppConstants.categoriesList.length, (
+                  index,
+                ) {
+                  return CategoryRoundedWidget(
+                    image: AppConstants.categoriesList[index].image,
+                    name: AppConstants.categoriesList[index].name,
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

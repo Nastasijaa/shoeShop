@@ -4,6 +4,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/screens/cart/quantity_btm_sheet.dart';
+import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
@@ -53,7 +54,7 @@ class CartWidget extends StatelessWidget {
                             ),
                             IconButton(
                               onPressed: () {},
-                              icon: const Icon(IconlyLight.heart),
+                              icon: const HeartButtonWidget(),
                             ),
                           ],
                         ),
