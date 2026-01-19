@@ -72,6 +72,11 @@ flutter:
     - assets/user/bag/
     - assets/user/banners/
     - assets/user/categories/
+    - assets/user/categories/Men_flat/
+    - assets/user/categories/Men_sneakers/
+    - assets/user/categories/Women_flat/
+    - assets/user/categories/Women_heels/
+    - assets/user/categories/Women_sneakers/
     - assets/user/profile/
 
 

@@ -5,6 +5,7 @@ import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/modals/categories_model.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/screens/inner_screen/category_products_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/ctg_rounded_widget.dart';
 import 'package:shoeshop/widgets/map_section.dart';
@@ -50,6 +51,18 @@ class HomeScreen extends StatelessWidget {
                       icon: category.icon,
                       onTap: () {
                         Navigator.of(ctx).pop();
+                        final products = AppConstants.getCategoryAssets(
+                          category.id,
+                        );
+                        final screenTitle = "$title ${category.name}";
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CategoryProductsScreen(
+                              title: screenTitle,
+                              products: products,
+                            ),
+                          ),
+                        );
                       },
                     );
                   }),
@@ -68,7 +81,10 @@ class HomeScreen extends StatelessWidget {
             child: Image.asset(AssetsMenager.logo),
           ),
         ),
-        title: const Text("Shoe Shop"),
+        title: const TitelesTextWidget(
+          label: "ShoeShop",
+          color: AppColors.darkPrimary,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -77,34 +93,73 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12.0),
-              const TitelesTextWidget(label: "Categories"),
+              const TitelesTextWidget(
+                label: "New collection",
+                color: AppColors.darkPrimary,
+              ),
               const SizedBox(height: 12.0),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
-                children: List.generate(AppConstants.categoriesList.length, (
-                  index,
-                ) {
-                  final category = AppConstants.categoriesList[index];
-                  final categories = category.name == "Men"
-                      ? AppConstants.menCategoriesList
-                      : AppConstants.womenCategoriesList;
-                  return CategoryRoundedWidget(
-                    image: category.image,
-                    icon: category.icon,
-                    name: category.name,
-                    onTap: () {
-                      showCategoryPicker(
-                        title: category.name,
-                        categories: categories,
-                      );
-                    },
-                  );
-                }),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  color: AppColors.lightBrownCard,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 120,
+                          child: Image.asset(
+                            "${AssetsMenager.imagePath}/newcollection.jpg",
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                "NEW BROWN COLLECTION",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                  color: AppColors.darkPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12.0),
+              SizedBox(
+                height: size.height * 0.18,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: AppConstants.latestArrivalBrownAssets.length,
+                  itemBuilder: (context, index) {
+                    final assetPath =
+                        AppConstants.latestArrivalBrownAssets[index];
+                    return LatestArrivalProductsWidget(
+                      productId: assetPath,
+                      title: AppConstants.titleFromId(assetPath),
+                      description: AppConstants.descriptionFromId(assetPath),
+                      imageAsset: assetPath,
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 16.0),
-              const TitelesTextWidget(label: "Promo"),
+              const TitelesTextWidget(
+                label: "Promo",
+                color: AppColors.darkPrimary,
+              ),
               const SizedBox(height: 12.0),
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -145,28 +200,48 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16.0),
-              const TitelesTextWidget(label: "Latest arrival"),
+              const TitelesTextWidget(
+                label: "Categories",
+                color: AppColors.darkPrimary,
+              ),
               const SizedBox(height: 12.0),
-              SizedBox(
-                height: size.height * 0.18,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 10,
-                  itemBuilder: (context, index) {
-                    return LatestArrivalProductsWidget(
-                      productId: "latest_$index",
-                    );
-                  },
-                ),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                children: List.generate(AppConstants.categoriesList.length, (
+                  index,
+                ) {
+                  final category = AppConstants.categoriesList[index];
+                  final categories = category.name == "Men"
+                      ? AppConstants.menCategoriesList
+                      : AppConstants.womenCategoriesList;
+                  return CategoryRoundedWidget(
+                    image: category.image,
+                    icon: category.icon,
+                    name: category.name,
+                    onTap: () {
+                      showCategoryPicker(
+                        title: category.name,
+                        categories: categories,
+                      );
+                    },
+                  );
+                }),
               ),
               const SizedBox(height: 16.0),
-              const TitelesTextWidget(label: "Store locations"),
+              const TitelesTextWidget(
+                label: "Store locations",
+                color: AppColors.darkPrimary,
+              ),
               const SizedBox(height: 12.0),
               SizedBox(
                 height: size.height * 0.22,
                 child: Swiper(
                   autoplay: true,
                   itemBuilder: (BuildContext context, int index) {
+                    final address =
+                        index == 0 ? "Bulevar Oslobodjenja 119" : "Bulevar Jase Tomica 1";
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Stack(
@@ -179,20 +254,20 @@ class HomeScreen extends StatelessWidget {
                           Container(
                             color: Colors.black.withOpacity(0.35),
                           ),
-                          const Positioned(
+                          Positioned(
                             left: 12,
                             right: 12,
                             bottom: 12,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                TitelesTextWidget(
-                                  label: "Shoe Shop - Novi Sad",
-                                  color: Colors.white,
+                                const TitelesTextWidget(
+                                  label: "ShoeShop - Novi Sad",
+                                  color: AppColors.darkPrimary,
                                   fontSize: 16,
                                 ),
                                 SubtitleTextWidget(
-                                  label: "Bulevar Oslobodjenja 88",
+                                  label: address,
                                   color: Colors.white,
                                   fontSize: 12,
                                 ),
@@ -252,7 +327,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16.0),
-              const TitelesTextWidget(label: "Contact"),
+              const TitelesTextWidget(
+                label: "Contact",
+                color: AppColors.darkPrimary,
+              ),
               const SizedBox(height: 8.0),
               Card(
                 child: Padding(

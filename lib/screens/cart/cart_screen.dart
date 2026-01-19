@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/cart/bottom_checkout.dart';
 import 'package:shoeshop/screens/cart/cart_widget.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/empty_bag.dart';
+import 'package:shoeshop/widgets/title_text.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -39,7 +41,10 @@ class CartScreen extends StatelessWidget {
             child: Image.asset(AssetsMenager.logo),
           ),
         ),
-        title: const Text("ShoeShop"),
+        title: const TitelesTextWidget(
+          label: "ShoeShop",
+          color: AppColors.darkPrimary,
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -49,11 +54,31 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return CartWidget(cartItem: items[index]);
-        },
+      body: Column(
+        children: [
+          if (cartProvider.discountPairs > 0)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "Ostvarili ste 30% popusta na muski i zenski par.",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return CartWidget(cartItem: items[index]);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

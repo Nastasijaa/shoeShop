@@ -13,6 +13,9 @@ class CartBottomSheetWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = context.watch<CartProvider>();
+    final discountAmount = cartProvider.discountAmount;
+    final totalBeforeDiscount = cartProvider.totalPrice;
+    final totalAfterDiscount = cartProvider.discountedTotalPrice;
     return Container(
 decoration: BoxDecoration(
 color: Theme.of(context).scaffoldBackgroundColor,
@@ -23,7 +26,7 @@ top: BorderSide(width: 1, color: Colors.grey),
 child: Padding(
 padding: const EdgeInsets.all(8.0),
 child: SizedBox(
-height: kBottomNavigationBarHeight + 10,
+height: kBottomNavigationBarHeight + (discountAmount > 0 ? 28 : 10),
 child: Row(
 mainAxisAlignment: MainAxisAlignment.spaceBetween,
 children: [
@@ -35,14 +38,23 @@ FittedBox(
 child: TitelesTextWidget(
 label:
     "Total (${cartProvider.itemCount} products/${cartProvider.totalQuantity} items)")),
+if (discountAmount > 0)
+  SubtitleTextWidget(
+    label: "Discount -${discountAmount.toStringAsFixed(2)} RSD",
+    color: Colors.green,
+  ),
 SubtitleTextWidget(
-label: "${cartProvider.totalPrice.toStringAsFixed(2)} RSD",
+label: "${(discountAmount > 0 ? totalAfterDiscount : totalBeforeDiscount).toStringAsFixed(2)} RSD",
 color: AppColors.darkPrimary,
 ),
 ],
 ),
 ),
 ElevatedButton(
+style: ElevatedButton.styleFrom(
+  backgroundColor: AppColors.darkPrimary,
+  foregroundColor: Colors.white,
+),
 onPressed: () async {
   if (await UserPrefs.isGuest()) {
     if (!context.mounted) {

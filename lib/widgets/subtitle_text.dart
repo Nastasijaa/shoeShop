@@ -9,7 +9,9 @@ class SubtitleTextWidget extends StatelessWidget {
     this.fontStyle=FontStyle.normal,
     this.fontWeight= FontWeight.normal,
     this.color,
-    this.textDecoration=TextDecoration.none
+    this.textDecoration=TextDecoration.none,
+    this.maxLines,
+    this.overflow,
     });
     final String label;
     final double fontSize;
@@ -17,12 +19,16 @@ class SubtitleTextWidget extends StatelessWidget {
     final FontWeight? fontWeight; //opciona promenljiva kad pozivamo ne moramo da je stavimo a i mozemo zato je ?
     final Color? color;
     final TextDecoration textDecoration;
+    final int? maxLines;
+    final TextOverflow? overflow;
 
 
   @override
   Widget build(BuildContext context) {
     return Text(
       label, //dobije iz druge kalse
+      maxLines: maxLines,
+      overflow: overflow,
       style: TextStyle(
         fontSize:  fontSize,
         fontStyle: fontStyle,

@@ -5,6 +5,8 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
+import 'package:shoeshop/providers/viewed_recently_provider.dart';
+import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
@@ -205,6 +207,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (!mounted) {
                           return;
                         }
+                        context.read<WishlistProvider>().clear();
+                        context.read<ViewedRecentlyProvider>().clear();
                         setState(() {
                           _isLoggedIn = false;
                           _name = "Guest";

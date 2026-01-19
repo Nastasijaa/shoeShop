@@ -1,5 +1,8 @@
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shoeshop/providers/viewed_recently_provider.dart';
+import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/empty_bag.dart';
 import 'package:shoeshop/widgets/products/product_widget.dart';
@@ -8,10 +11,10 @@ import 'package:shoeshop/widgets/title_text.dart';
 class ViewedRecentlyScreen extends StatelessWidget {
   static const routName = "/ViewedRecentlyScreen";
   const ViewedRecentlyScreen({super.key});
-  final bool isEmpty = false;
   @override
   Widget build(BuildContext context) {
-    return isEmpty
+    final items = context.watch<ViewedRecentlyProvider>().items;
+    return items.isEmpty
         ? Scaffold(
             appBar: AppBar(
               leading: IconButton(
@@ -25,10 +28,15 @@ class ViewedRecentlyScreen extends StatelessWidget {
               title: const TitelesTextWidget(label: "Viewed recently"),
             ),
             body: EmptyBagWidget(
-              imagePath: "${AssetsMenager.imagePath}/bag/checkout.png",
+              imagePath: "${AssetsMenager.imagePath}/profile/repeat.png",
               title: "No viewed products yet",
-              subtitle: "Looks like your cart is empty.",
-              buttonText: "Shop now",
+              subtitle: "Browse products to see them here.",
+              buttonText: "Browse products",
+              onPressed: () {
+                Navigator.of(context).pushReplacementNamed(
+                  RootScreen.routeName,
+                );
+              },
             ),
           )
         : Scaffold(
@@ -41,7 +49,9 @@ class ViewedRecentlyScreen extends StatelessWidget {
                   }
                 },
               ),
-              title: const TitelesTextWidget(label: "Viewed recently (6)"),
+              title: TitelesTextWidget(
+                label: "Viewed recently (${items.length})",
+              ),
               actions: [
                 IconButton(
                   onPressed: () {},
@@ -53,9 +63,16 @@ class ViewedRecentlyScreen extends StatelessWidget {
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               builder: (context, index) {
-                return ProductWidget(productId: "recent_$index");
+                final item = items[index];
+                return ProductWidget(
+                  productId: item.id,
+                  title: item.title,
+                  description: item.description,
+                  imageAsset: item.imageAsset,
+                  price: item.price,
+                );
               },
-              itemCount: 200,
+              itemCount: items.length,
               crossAxisCount: 2,
             ),
           );

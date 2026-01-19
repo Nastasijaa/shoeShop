@@ -1,8 +1,11 @@
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/products/product_widget.dart';
+import 'package:shoeshop/widgets/subtitle_text.dart';
+import 'package:shoeshop/widgets/title_text.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,17 +18,33 @@ class _SearchScreenState extends State<SearchScreen> {
   late TextEditingController searchTextController;
   late List<_SearchProduct> _allProducts;
   late List<_SearchProduct> _filteredProducts;
+  late List<String> _searchAssets;
+  final Set<String> _selectedColors = {};
+  final Set<String> _selectedMaterials = {};
+  final Set<String> _selectedGenders = {};
+  final Set<String> _selectedTypes = {};
+  String _query = "";
   @override //da stalnoučitava
   void initState() {
     searchTextController = TextEditingController();
+    _searchAssets = [
+      ...AppConstants.womenFlatAssets,
+      ...AppConstants.womenSneakersAssets,
+      ...AppConstants.womenHeelsAssets,
+      ...AppConstants.menSneakersAssets,
+      ...AppConstants.menFlatAssets,
+    ];
     _allProducts = List.generate(
-      200,
-      (index) => _SearchProduct(
-        id: "search_$index",
-        title: "Title $index",
-        description:
-            "Description for product $index with extra details for searching",
-      ),
+      _searchAssets.length,
+      (index) {
+        final assetPath = _searchAssets[index];
+        return _SearchProduct(
+          id: assetPath,
+          title: AppConstants.titleFromId(assetPath),
+          description: AppConstants.descriptionFromId(assetPath),
+          imageAsset: assetPath,
+        );
+      },
     );
     _filteredProducts = _allProducts;
     super.initState();
@@ -45,13 +64,186 @@ class _SearchScreenState extends State<SearchScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-              child: ClipOval(
-                child: Image.asset(AssetsMenager.logo),
-              ),
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              );
+            },
           ),
-          title: const Text("ShoeShop"),
+          title: Row(
+            children: [
+              ClipOval(
+                child: Image.asset(
+                  AssetsMenager.logo,
+                  height: 28,
+                  width: 28,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const TitelesTextWidget(
+                label: "ShoeShop",
+                color: AppColors.darkPrimary,
+              ),
+            ],
+          ),
+        ),
+        drawer: Drawer(
+          child: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                const TitelesTextWidget(
+                  label: "Filteri",
+                  color: AppColors.darkPrimary,
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(12),
+                    children: [
+                      const TitelesTextWidget(
+                        label: "Pol",
+                        color: AppColors.darkPrimary,
+                      ),
+                      const SizedBox(height: 4),
+                      ...AppConstants.filterGenders.map((gender) {
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -2),
+                          title: Text(AppConstants.genderLabel(gender)),
+                          value: _selectedGenders.contains(gender),
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                _selectedGenders.add(gender);
+                              } else {
+                                _selectedGenders.remove(gender);
+                              }
+                              _applyFilters();
+                            });
+                          },
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      const TitelesTextWidget(
+                        label: "Kategorije",
+                        color: AppColors.darkPrimary,
+                      ),
+                      const SizedBox(height: 4),
+                      ...AppConstants.filterTypes.map((type) {
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -2),
+                          title: Text(AppConstants.typeLabel(type)),
+                          value: _selectedTypes.contains(type),
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                _selectedTypes.add(type);
+                              } else {
+                                _selectedTypes.remove(type);
+                              }
+                              _applyFilters();
+                            });
+                          },
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      const TitelesTextWidget(
+                        label: "Boje",
+                        color: AppColors.darkPrimary,
+                      ),
+                      const SizedBox(height: 4),
+                      ...AppConstants.filterColors.map((color) {
+                        final dotColor = _dotColorForLabel(color);
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -2),
+                          secondary: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: dotColor,
+                              border: Border.all(
+                                color: Colors.black.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          title: Text(AppConstants.colorLabel(color)),
+                          value: _selectedColors.contains(color),
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                _selectedColors.add(color);
+                              } else {
+                                _selectedColors.remove(color);
+                              }
+                              _applyFilters();
+                            });
+                          },
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      const TitelesTextWidget(
+                        label: "Materijal",
+                        color: AppColors.darkPrimary,
+                      ),
+                      const SizedBox(height: 4),
+                      ...AppConstants.materialTypes.map((material) {
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -2),
+                          title: Text(
+                            AppConstants.materialFilterLabel(material),
+                          ),
+                          value: _selectedMaterials.contains(material),
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                _selectedMaterials.add(material);
+                              } else {
+                                _selectedMaterials.remove(material);
+                              }
+                              _applyFilters();
+                            });
+                          },
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedColors.clear();
+                              _selectedMaterials.clear();
+                              _selectedGenders.clear();
+                              _selectedTypes.clear();
+                              _applyFilters();
+                            });
+                          },
+                          child: const Text("Ocisti filtere"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -68,7 +260,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       FocusScope.of(context).unfocus();
                       searchTextController.clear();
                       setState(() {
-                        _filteredProducts = _allProducts;
+                        _query = "";
+                        _applyFilters();
                       });
                       //});
                     },
@@ -79,24 +272,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
                 onChanged: (value) {
-                  final query = value.trim().toLowerCase();
-                  if (query.isEmpty) {
-                    setState(() {
-                      _filteredProducts = _allProducts;
-                    });
-                    return;
-                  }
-                  final words = query
-                      .split(RegExp(r"\s+"))
-                      .where((word) => word.isNotEmpty)
-                      .toList(growable: false);
                   setState(() {
-                    _filteredProducts = _allProducts.where((product) {
-                      final haystack =
-                          "${product.title} ${product.description}"
-                              .toLowerCase();
-                      return words.every(haystack.contains);
-                    }).toList(growable: false);
+                    _query = value.trim().toLowerCase();
+                    _applyFilters();
                   });
                 },
                 onSubmitted: (value) {
@@ -106,23 +284,97 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 15.0),
               Expanded(
-                child: DynamicHeightGridView(
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  builder: (context, index) {
-                    return ProductWidget(
-                      productId: _filteredProducts[index].id,
-                    );
-                  },
-                  itemCount: _filteredProducts.length,
-                  crossAxisCount: 2,
-                ),
+                child: _filteredProducts.isEmpty
+                    ? Center(
+                        child: SubtitleTextWidget(
+                          label: (_selectedColors.isNotEmpty ||
+                                      _selectedMaterials.isNotEmpty ||
+                                      _selectedGenders.isNotEmpty ||
+                                      _selectedTypes.isNotEmpty)
+                              ? "Nema odabranog filtera."
+                              : _query.isNotEmpty
+                                  ? "Nema rezultata za pretragu."
+                                  : "Nema proizvoda.",
+                        ),
+                      )
+                    : DynamicHeightGridView(
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        builder: (context, index) {
+                          final product = _filteredProducts[index];
+                          return ProductWidget(
+                            productId: product.id,
+                            title: product.title,
+                            description: product.description,
+                            imageAsset: product.imageAsset,
+                          );
+                        },
+                        itemCount: _filteredProducts.length,
+                        crossAxisCount: 2,
+                      ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _applyFilters() {
+    final words = _query.isEmpty
+        ? const <String>[]
+        : _query
+            .split(RegExp(r"\s+"))
+            .where((word) => word.isNotEmpty)
+            .toList(growable: false);
+    _filteredProducts = _allProducts.where((product) {
+      final gender = AppConstants.genderFromId(product.id);
+      final type = AppConstants.typeFromId(product.id);
+      final color = AppConstants.colorFromId(product.id);
+      final material = AppConstants.materialTypeFromId(product.id);
+
+      final genderOk = _selectedGenders.isEmpty ||
+          (gender != null && _selectedGenders.contains(gender));
+      final typeOk = _selectedTypes.isEmpty ||
+          (type != null && _selectedTypes.contains(type));
+      final colorOk = _selectedColors.isEmpty ||
+          (color != null && _selectedColors.contains(color));
+      final materialOk = _selectedMaterials.isEmpty ||
+          (material != null && _selectedMaterials.contains(material));
+      if (!(genderOk && typeOk && colorOk && materialOk)) {
+        return false;
+      }
+      if (words.isEmpty) {
+        return true;
+      }
+      final haystack = "${product.title} ${product.description}".toLowerCase();
+      return words.every(haystack.contains);
+    }).toList(growable: false);
+  }
+
+  Color _dotColorForLabel(String color) {
+    switch (color) {
+      case "bele":
+        return Colors.white;
+      case "crne":
+        return Colors.black;
+      case "braon":
+        return const Color(0xff8b5a2b);
+      case "plave":
+        return Colors.blue;
+      case "roze":
+        return Colors.pink;
+      case "zute":
+        return Colors.yellow;
+      case "bez":
+        return const Color(0xfff5deb3);
+      case "sive":
+        return Colors.grey;
+      case "bordo":
+        return const Color(0xff6d1b1b);
+      default:
+        return Colors.transparent;
+    }
   }
 }
 
@@ -131,9 +383,11 @@ class _SearchProduct {
     required this.id,
     required this.title,
     required this.description,
+    required this.imageAsset,
   });
 
   final String id;
   final String title;
   final String description;
+  final String imageAsset;
 }

@@ -19,6 +19,7 @@ class CartWidget extends StatelessWidget {
     final cartProvider = context.watch<CartProvider>();
     final quantity = cartItem.quantity;
     Size size = MediaQuery.of(context).size;
+    final isAssetImage = cartItem.imageUrl.startsWith("assets/");
     return FittedBox(
       child: IntrinsicWidth(
         child: Padding(
@@ -28,12 +29,19 @@ class CartWidget extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.0),
-                child: FancyShimmerImage(
-                  imageUrl: cartItem.imageUrl,
-                  height: size.height * 0.2,
-                  width: size.height * 0.2,
-                  boxFit: BoxFit.contain,
-                ),
+                child: isAssetImage
+                    ? Image.asset(
+                        cartItem.imageUrl,
+                        height: size.height * 0.2,
+                        width: size.height * 0.2,
+                        fit: BoxFit.contain,
+                      )
+                    : FancyShimmerImage(
+                        imageUrl: cartItem.imageUrl,
+                        height: size.height * 0.2,
+                        width: size.height * 0.2,
+                        boxFit: BoxFit.contain,
+                      ),
               ),
               const SizedBox(width: 10),
               IntrinsicWidth(
@@ -59,7 +67,7 @@ class CartWidget extends StatelessWidget {
                                 color: AppColors.darkPrimary,
                               ),
                             ),
-                            HeartButtonWidget(productId: cartItem.id),
+                            HeartButtonWidget(productId: cartItem.productId),
                           ],
                         ),
                       ],
@@ -67,9 +75,8 @@ class CartWidget extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: SubtitleTextWidget(
-                        label: "ID: ${cartItem.id}",
+                        label: "Broj: ${cartItem.size}",
                         fontSize: 14,
-                        color: Colors.red,
                       ),
                     ),
                     Row(

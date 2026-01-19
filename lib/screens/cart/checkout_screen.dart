@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
@@ -75,7 +77,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return AlertDialog(
           title: const Text("Neispravan unos"),
           content: const Text(
-            "Proveri format emaila, pa pokusaj ponovo.",
+            "Proveri format emaila, pokusaj ponovo.",
           ),
           actions: [
             TextButton(
@@ -101,13 +103,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     // Placeholder for payment API integration.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Payment API placeholder: integrate provider here."),
+        content: Text("Payment API "),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
+    final discountAmount = cartProvider.discountAmount;
+    final totalBeforeDiscount = cartProvider.totalPrice;
+    final totalAfterDiscount = cartProvider.discountedTotalPrice;
     return Scaffold(
       appBar: AppBar(
         title: const TitelesTextWidget(label: "Checkout"),
@@ -251,6 +257,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                     child: const Text("Pay online"),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        child: TitelesTextWidget(
+                          label:
+                              "Total (${cartProvider.itemCount} products/${cartProvider.totalQuantity} items)",
+                        ),
+                      ),
+                      if (discountAmount > 0)
+                        SubtitleTextWidget(
+                          label:
+                              "Discount -${discountAmount.toStringAsFixed(2)} RSD",
+                          color: Colors.green,
+                        ),
+                      SubtitleTextWidget(
+                        label:
+                            "${(discountAmount > 0 ? totalAfterDiscount : totalBeforeDiscount).toStringAsFixed(2)} RSD",
+                        color: AppColors.darkPrimary,
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -2,7 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/validator.dart';
+import 'package:shoeshop/providers/viewed_recently_provider.dart';
+import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/auth/register.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
@@ -59,6 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) {
       return;
     }
+    context.read<WishlistProvider>().clear();
+    context.read<ViewedRecentlyProvider>().clear();
     Navigator.of(context).pushReplacementNamed(RootScreen.routeName);
   }
 
@@ -89,10 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(width: 12),
                     const Text(
-                      "Shoe Shop",
+                      "ShoeShop",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.darkPrimary,
                       ),
                     ),
                   ],

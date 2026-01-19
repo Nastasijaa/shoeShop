@@ -1,18 +1,23 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class CartItem {
   CartItem({
     required this.id,
+    required this.productId,
     required this.title,
     required this.price,
     required this.imageUrl,
+    required this.size,
     this.quantity = 1,
   });
 
   final String id;
+  final String productId;
   final String title;
   final double price;
   final String imageUrl;
+  final int size;
   int quantity;
 }
 
@@ -31,20 +36,36 @@ class CartProvider with ChangeNotifier {
     return _items.values.fold(0, (sum, item) => sum + item.price * item.quantity);
   }
 
+  int get discountPairs {
+    return _calculateDiscountPairs();
+  }
+
+  double get discountAmount {
+    return _calculateDiscountAmount();
+  }
+
+  double get discountedTotalPrice {
+    return totalPrice - discountAmount;
+  }
+
   void addItem({
-    required String id,
+    required String productId,
     required String title,
     required double price,
     required String imageUrl,
+    required int size,
   }) {
-    if (_items.containsKey(id)) {
-      _items[id]!.quantity += 1;
+    final cartId = "$productId-$size";
+    if (_items.containsKey(cartId)) {
+      _items[cartId]!.quantity += 1;
     } else {
-      _items[id] = CartItem(
-        id: id,
+      _items[cartId] = CartItem(
+        id: cartId,
+        productId: productId,
         title: title,
         price: price,
         imageUrl: imageUrl,
+        size: size,
       );
     }
     notifyListeners();
@@ -78,4 +99,59 @@ class CartProvider with ChangeNotifier {
     _items.clear();
     notifyListeners();
   }
+
+  int _calculateDiscountPairs() {
+    final genderedPrices = _collectGenderedPrices();
+    return math.min(genderedPrices.male.length, genderedPrices.female.length);
+  }
+
+  double _calculateDiscountAmount() {
+    final genderedPrices = _collectGenderedPrices();
+    final pairs = math.min(genderedPrices.male.length, genderedPrices.female.length);
+    if (pairs == 0) {
+      return 0.0;
+    }
+    genderedPrices.male.sort((a, b) => b.compareTo(a));
+    genderedPrices.female.sort((a, b) => b.compareTo(a));
+    var discount = 0.0;
+    for (var i = 0; i < pairs; i++) {
+      discount += (genderedPrices.male[i] + genderedPrices.female[i]) * 0.30;
+    }
+    return discount;
+  }
+
+  _GenderedPrices _collectGenderedPrices() {
+    final male = <double>[];
+    final female = <double>[];
+    for (final item in _items.values) {
+      final gender = _genderFromId(item.productId);
+      if (gender == null) {
+        continue;
+      }
+      final target = gender == _Gender.male ? male : female;
+      for (var i = 0; i < item.quantity; i++) {
+        target.add(item.price);
+      }
+    }
+    return _GenderedPrices(male: male, female: female);
+  }
+
+  _Gender? _genderFromId(String id) {
+    final lower = id.toLowerCase();
+    if (lower.contains("women")) {
+      return _Gender.female;
+    }
+    if (lower.contains("men")) {
+      return _Gender.male;
+    }
+    return null;
+  }
 }
+
+class _GenderedPrices {
+  const _GenderedPrices({required this.male, required this.female});
+  final List<double> male;
+  final List<double> female;
+}
+
+enum _Gender { male, female }
