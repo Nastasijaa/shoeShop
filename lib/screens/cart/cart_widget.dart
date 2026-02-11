@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -5,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/cart/quantity_btm_sheet.dart';
+import 'package:shoeshop/services/stock_service.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
@@ -20,6 +23,9 @@ class CartWidget extends StatelessWidget {
     final quantity = cartItem.quantity;
     Size size = MediaQuery.of(context).size;
     final isAssetImage = cartItem.imageUrl.startsWith("assets/");
+    final isNetworkImage =
+        cartItem.imageUrl.startsWith("http://") ||
+        cartItem.imageUrl.startsWith("https://");
     return FittedBox(
       child: IntrinsicWidth(
         child: Padding(
@@ -36,12 +42,19 @@ class CartWidget extends StatelessWidget {
                         width: size.height * 0.2,
                         fit: BoxFit.contain,
                       )
-                    : FancyShimmerImage(
-                        imageUrl: cartItem.imageUrl,
-                        height: size.height * 0.2,
-                        width: size.height * 0.2,
-                        boxFit: BoxFit.contain,
-                      ),
+                    : isNetworkImage
+                        ? FancyShimmerImage(
+                            imageUrl: cartItem.imageUrl,
+                            height: size.height * 0.2,
+                            width: size.height * 0.2,
+                            boxFit: BoxFit.contain,
+                          )
+                        : Image.file(
+                            File(cartItem.imageUrl),
+                            height: size.height * 0.2,
+                            width: size.height * 0.2,
+                            fit: BoxFit.contain,
+                          ),
               ),
               const SizedBox(width: 10),
               IntrinsicWidth(
@@ -89,6 +102,22 @@ class CartWidget extends StatelessWidget {
                         const Spacer(),
                         OutlinedButton.icon(
                           onPressed: () async {
+                            final stockQty = await StockService.fetchStockQty(
+                              productId: cartItem.productId,
+                              size: cartItem.size,
+                            );
+                            if (!context.mounted) {
+                              return;
+                            }
+                            if (stockQty != null && stockQty <= 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Nema vise na stanju za ovaj broj."),
+                                ),
+                              );
+                              return;
+                            }
+
                             final result = await showModalBottomSheet<int>(
                               backgroundColor: Theme.of(
                                 context,
@@ -103,13 +132,23 @@ class CartWidget extends StatelessWidget {
                               builder: (context) {
                                 return QuantitySheetBottomWidget(
                                   currentQuantity: quantity,
+                                  maxQuantity: stockQty ?? 10,
                                 );
                               },
                             );
                             if (result != null && result != quantity) {
+                              if (stockQty != null && result > stockQty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Ne moze toliko da se doda."),
+                                  ),
+                                );
+                                return;
+                              }
                               cartProvider.updateQuantity(
                                 cartItem.id,
                                 result,
+                                maxQuantity: stockQty,
                               );
                             }
                           },

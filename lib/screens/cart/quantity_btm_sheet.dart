@@ -7,9 +7,11 @@ class QuantitySheetBottomWidget extends StatelessWidget {
   const QuantitySheetBottomWidget({
     super.key,
     required this.currentQuantity,
+    this.maxQuantity = 10,
   });
 
   final int currentQuantity;
+  final int maxQuantity;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ Expanded(
 child: ListView.builder(
 // physics: NeverScrollableScrollPhysics(),
 // shrinkWrap: true,
-itemCount: 10,
+itemCount: maxQuantity,
 itemBuilder: (context, index) {
 final qty = index + 1;
 return InkWell(

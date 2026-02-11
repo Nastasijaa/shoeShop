@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/theme_data.dart';
+import 'package:shoeshop/firebase_options.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
+import 'package:shoeshop/screens/auth/forgot_password.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/auth/register.dart';
+import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
+import 'package:shoeshop/screens/admin/admin_products_manage_screen.dart';
 import 'package:shoeshop/screens/cart/checkout_screen.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
@@ -14,7 +19,11 @@ import 'package:shoeshop/screens/inner_screen/wishlist.dart';
 import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -68,6 +77,11 @@ class MyApp extends StatelessWidget {
               LoginScreen.routeName: (context) => const LoginScreen(),
               OrdersScreen.routeName: (context) => const OrdersScreen(),
               CheckoutScreen.routeName: (context) => const CheckoutScreen(),
+              AdminDashboardScreen.routeName: (context) =>
+                  const AdminDashboardScreen(),
+              AdminProductsManageScreen.routeName: (context) =>
+                  const AdminProductsManageScreen(),
+              ForgotPasswordScreen.routeName: (context) => const ForgotPasswordScreen(),
             },
           );
         },
@@ -75,3 +89,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

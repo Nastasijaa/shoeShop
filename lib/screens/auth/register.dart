@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/admin_config.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/validator.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
@@ -69,11 +72,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!isValid) {
       return;
     }
-    await UserPrefs.saveUser(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      imagePath: _pickedImage?.path,
-    );
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    try {
+      final cred = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      final uid = cred.user?.uid;
+      if (uid != null) {
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'email': email,
+          'name': name,
+          'photoPath': _pickedImage?.path ?? '',
+          'isAdmin': AdminConfig.isAdminEmail(email),
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+      await UserPrefs.saveUser(
+        name: name,
+        email: email,
+        imagePath: _pickedImage?.path,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      await MyAppFunctions.showErrorOrWarningDialog(
+        context: context,
+        subtitle: e.toString(),
+        isError: true,
+        fct: () {},
+      );
+      return;
+    }
     if (!mounted) {
       return;
     }
@@ -110,6 +139,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.of(context).pushReplacementNamed("/LoginScreen");
+              }
+            },
+          ),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
@@ -143,12 +184,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 30),
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TitelesTextWidget(label: "Welcome back!"),
-                      SubtitleTextWidget(label: "Your welcome message"),
-                    ],
+                  child: SubtitleTextWidget(
+                    label: "We are glad you will become part of our story.",
                   ),
                 ),
                 const SizedBox(height: 30),

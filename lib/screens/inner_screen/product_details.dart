@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +9,7 @@ import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
 import 'package:shoeshop/screens/cart/size_btm_sheet.dart';
 import 'package:shoeshop/services/assets_menager.dart';
+import 'package:shoeshop/services/stock_service.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/products/latest_arrival.dart';
@@ -35,7 +38,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         args?.description ?? AppConstants.descriptionFromId(productId);
     final price = args?.price ?? AppConstants.priceFromId(productId);
     final imageAsset = args?.imageAsset;
+    final imageUrl = args?.imageUrl;
+    final isNetworkImage =
+        imageUrl != null &&
+        (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"));
+    final isLocalImage =
+        imageUrl != null && imageUrl.isNotEmpty && !isNetworkImage;
+    final sizes = args?.sizes;
     final categoryLabel = AppConstants.categoryLabelFromId(productId);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : AppColors.darkPrimary;
+    final bodyTextColor = isDark ? Colors.white : Colors.black;
     Size size = MediaQuery.of(context).size;
 
     if (_lastViewedId != productId) {
@@ -47,6 +60,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               description: description,
               price: price,
               imageAsset: imageAsset,
+              imageUrl: imageUrl,
+              sizes: sizes,
             ),
           );
     }
@@ -80,11 +95,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     width: double.infinity,
                     fit: BoxFit.cover,
                   )
-                : FancyShimmerImage(
-                    imageUrl: AppConstants.imageUrl,
-                    height: size.height * 0.38,
-                    width: double.infinity,
-                  ),
+                : isLocalImage
+                    ? Image.file(
+                        File(imageUrl),
+                        height: size.height * 0.38,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : FancyShimmerImage(
+                        imageUrl: imageUrl ?? AppConstants.imageUrl,
+                        height: size.height * 0.38,
+                        width: double.infinity,
+                      ),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -97,10 +119,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         child: Text(
                           title,
                           softWrap: true,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.darkPrimary,
+                            color: titleColor,
                           ),
                         ),
                       ),
@@ -192,17 +214,32 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   );
                                   return;
                                 }
-                                context.read<CartProvider>().addItem(
+                                final stockQty =
+                                    await StockService.fetchStockQty(
+                                  productId: productId,
+                                  size: _selectedSize!,
+                                );
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                final added = context.read<CartProvider>().addItem(
                                       productId: productId,
                                       title: title,
                                       price: price,
                                       imageUrl:
-                                          imageAsset ?? AppConstants.imageUrl,
+                                          imageAsset ??
+                                          imageUrl ??
+                                          AppConstants.imageUrl,
                                       size: _selectedSize!,
+                                      maxQuantity: stockQty,
                                     );
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Added to cart"),
+                                  SnackBar(
+                                    content: Text(
+                                      added
+                                          ? "Added to cart"
+                                          : "Ne moze toliko da se doda za izabrani broj.",
+                                    ),
                                   ),
                                 );
                               },
@@ -224,20 +261,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const TitelesTextWidget(
+                      TitelesTextWidget(
                         label: "About this item",
-                        color: AppColors.darkPrimary,
+                        color: titleColor,
                       ),
                       SubtitleTextWidget(
                         label: categoryLabel,
-                        color: Colors.black,
+                        color: bodyTextColor,
                       ),
                     ],
                   ),
                   const SizedBox(height: 15),
                   SubtitleTextWidget(
                     label: description,
-                    color: Colors.black,
+                    color: bodyTextColor,
                   ),
                   const SizedBox(height: 12),
                   const Align(
@@ -317,6 +354,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Future<void> _pickSize(BuildContext context, String productId) async {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as ProductDetailsArgs?;
+    final availableSizes = (args?.sizes != null && args!.sizes!.isNotEmpty)
+        ? args.sizes!
+        : AppConstants.sizesFromId(productId);
     final size = await showModalBottomSheet<int>(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
@@ -328,7 +370,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       context: context,
       builder: (context) {
         return SizeSheetBottomWidget(
-          sizes: AppConstants.sizesFromId(productId),
+          sizes: availableSizes,
           currentSize: _selectedSize,
         );
       },
@@ -359,6 +401,8 @@ class ProductDetailsArgs {
     required this.description,
     required this.price,
     this.imageAsset,
+    this.imageUrl,
+    this.sizes,
   });
 
   final String id;
@@ -366,4 +410,6 @@ class ProductDetailsArgs {
   final String description;
   final double price;
   final String? imageAsset;
+  final String? imageUrl;
+  final List<int>? sizes;
 }

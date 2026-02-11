@@ -1,10 +1,8 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/modals/categories_model.dart';
-import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/screens/inner_screen/category_products_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/widgets/ctg_rounded_widget.dart';
@@ -60,6 +58,7 @@ class HomeScreen extends StatelessWidget {
                             builder: (_) => CategoryProductsScreen(
                               title: screenTitle,
                               products: products,
+                              categoryImage: category.image,
                             ),
                           ),
                         );
@@ -117,19 +116,17 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "NEW BROWN COLLECTION",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                  color: AppColors.darkPrimary,
-                                ),
+                          child: Center(
+                            child: Text(
+                              "NEW BROWN COLLECTION",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                color: AppColors.darkPrimary,
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -155,6 +152,7 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
               ),
+              const SizedBox(height: 12.0),
               const SizedBox(height: 16.0),
               const TitelesTextWidget(
                 label: "Promo",

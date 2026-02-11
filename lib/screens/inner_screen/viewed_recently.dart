@@ -52,12 +52,6 @@ class ViewedRecentlyScreen extends StatelessWidget {
               title: TitelesTextWidget(
                 label: "Viewed recently (${items.length})",
               ),
-              actions: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete_forever_rounded),
-                ),
-              ],
             ),
             body: DynamicHeightGridView(
               mainAxisSpacing: 12,
@@ -69,7 +63,9 @@ class ViewedRecentlyScreen extends StatelessWidget {
                   title: item.title,
                   description: item.description,
                   imageAsset: item.imageAsset,
+                  imageUrl: item.imageUrl,
                   price: item.price,
+                  sizes: item.sizes,
                 );
               },
               itemCount: items.length,

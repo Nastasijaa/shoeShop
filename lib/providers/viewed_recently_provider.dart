@@ -7,6 +7,8 @@ class ViewedProduct {
     required this.description,
     required this.price,
     required this.imageAsset,
+    this.imageUrl,
+    this.sizes,
   });
 
   final String id;
@@ -14,6 +16,8 @@ class ViewedProduct {
   final String description;
   final double price;
   final String? imageAsset;
+  final String? imageUrl;
+  final List<int>? sizes;
 }
 
 class ViewedRecentlyProvider with ChangeNotifier {

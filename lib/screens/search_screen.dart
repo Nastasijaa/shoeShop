@@ -1,4 +1,5 @@
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/app_constants.dart';
@@ -19,6 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
   late List<_SearchProduct> _allProducts;
   late List<_SearchProduct> _filteredProducts;
   late List<String> _searchAssets;
+  bool _isLoadingProducts = true;
   final Set<String> _selectedColors = {};
   final Set<String> _selectedMaterials = {};
   final Set<String> _selectedGenders = {};
@@ -47,6 +49,7 @@ class _SearchScreenState extends State<SearchScreen> {
       },
     );
     _filteredProducts = _allProducts;
+    _loadFirestoreProducts();
     super.initState();
   }
 
@@ -58,6 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final availableTypes = _availableTypes();
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -124,6 +128,10 @@ class _SearchScreenState extends State<SearchScreen> {
                               } else {
                                 _selectedGenders.remove(gender);
                               }
+                              if (_selectedGenders.length == 1 &&
+                                  _selectedGenders.contains("men")) {
+                                _selectedTypes.remove("heels");
+                              }
                               _applyFilters();
                             });
                           },
@@ -135,7 +143,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         color: AppColors.darkPrimary,
                       ),
                       const SizedBox(height: 4),
-                      ...AppConstants.filterTypes.map((type) {
+                      ...availableTypes.map((type) {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           dense: true,
@@ -284,7 +292,9 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 15.0),
               Expanded(
-                child: _filteredProducts.isEmpty
+                child: _isLoadingProducts
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredProducts.isEmpty
                     ? Center(
                         child: SubtitleTextWidget(
                           label: (_selectedColors.isNotEmpty ||
@@ -307,6 +317,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             title: product.title,
                             description: product.description,
                             imageAsset: product.imageAsset,
+                            imageUrl: product.imageUrl,
+                            price: product.price,
+                            sizes: product.sizes,
                           );
                         },
                         itemCount: _filteredProducts.length,
@@ -328,10 +341,11 @@ class _SearchScreenState extends State<SearchScreen> {
             .where((word) => word.isNotEmpty)
             .toList(growable: false);
     _filteredProducts = _allProducts.where((product) {
-      final gender = AppConstants.genderFromId(product.id);
-      final type = AppConstants.typeFromId(product.id);
-      final color = AppConstants.colorFromId(product.id);
-      final material = AppConstants.materialTypeFromId(product.id);
+      final gender = product.gender ?? AppConstants.genderFromId(product.id);
+      final type = product.type ?? AppConstants.typeFromId(product.id);
+      final color = product.color ?? AppConstants.colorFromId(product.id);
+      final material =
+          product.material ?? AppConstants.materialTypeFromId(product.id);
 
       final genderOk = _selectedGenders.isEmpty ||
           (gender != null && _selectedGenders.contains(gender));
@@ -350,6 +364,70 @@ class _SearchScreenState extends State<SearchScreen> {
       final haystack = "${product.title} ${product.description}".toLowerCase();
       return words.every(haystack.contains);
     }).toList(growable: false);
+  }
+
+  Future<void> _loadFirestoreProducts() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('products')
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final dbProducts = <_SearchProduct>[];
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final title = (data['title'] as String?)?.trim();
+        final description = (data['description'] as String?)?.trim();
+        final price = (data['price'] as num?)?.toDouble();
+        final imageUrl = (data['imageUrl'] as String?)?.trim();
+
+        final sizesSnap = await doc.reference.collection('stocks').get();
+        final sizes = <int>[];
+        for (final stock in sizesSnap.docs) {
+          final stockData = stock.data();
+          final qty = (stockData['qty'] as num?)?.toInt() ?? 0;
+          if (qty <= 0) continue;
+          final size =
+              (stockData['size'] as num?)?.toInt() ?? int.tryParse(stock.id);
+          if (size != null) sizes.add(size);
+        }
+
+        dbProducts.add(
+          _SearchProduct(
+            id: doc.id,
+            title: title?.isNotEmpty == true ? title! : "Proizvod",
+            description: description ?? "",
+            imageAsset: null,
+            imageUrl: imageUrl,
+            price: price,
+            sizes: sizes,
+            gender: data['gender'] as String?,
+            type: data['type'] as String?,
+            color: data['color'] as String?,
+            material: data['material'] as String?,
+          ),
+        );
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _allProducts = [..._allProducts, ...dbProducts];
+        _applyFilters();
+        _isLoadingProducts = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingProducts = false;
+      });
+    }
+  }
+
+  List<String> _availableTypes() {
+    if (_selectedGenders.length == 1 && _selectedGenders.contains("men")) {
+      return const ["flat", "sneakers"];
+    }
+    return AppConstants.filterTypes;
   }
 
   Color _dotColorForLabel(String color) {
@@ -384,10 +462,24 @@ class _SearchProduct {
     required this.title,
     required this.description,
     required this.imageAsset,
+    this.imageUrl,
+    this.price,
+    this.sizes,
+    this.gender,
+    this.type,
+    this.color,
+    this.material,
   });
 
   final String id;
   final String title;
   final String description;
-  final String imageAsset;
+  final String? imageAsset;
+  final String? imageUrl;
+  final double? price;
+  final List<int>? sizes;
+  final String? gender;
+  final String? type;
+  final String? color;
+  final String? material;
 }

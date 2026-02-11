@@ -2,16 +2,20 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/admin_config.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/validator.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
 import 'package:shoeshop/providers/wishlist_provider.dart';
+import 'package:shoeshop/screens/auth/forgot_password.dart';
 import 'package:shoeshop/screens/auth/register.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
+import 'package:shoeshop/services/my_app_function.dart';
 import 'package:shoeshop/services/user_prefs.dart';
-import 'package:shoeshop/widgets/auth/google_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
@@ -58,8 +62,41 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     final email = _emailController.text.trim();
-    final nameFromEmail = email.contains('@') ? email.split('@').first : email;
-    await UserPrefs.saveUser(name: nameFromEmail, email: email);
+    final password = _passwordController.text;
+    try {
+      final cred = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      final uid = cred.user?.uid;
+      String name = email.contains('@') ? email.split('@').first : email;
+      String imagePath = '';
+      if (uid != null) {
+        final snap =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (snap.exists) {
+          final data = snap.data() ?? {};
+          name = (data['name'] as String?) ?? name;
+          imagePath = (data['photoPath'] as String?) ?? '';
+        } else {
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'email': email,
+            'name': name,
+            'photoPath': '',
+            'isAdmin': AdminConfig.isAdminEmail(email),
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      }
+      await UserPrefs.saveUser(name: name, email: email, imagePath: imagePath);
+    } catch (e) {
+      if (!mounted) return;
+      await MyAppFunctions.showErrorOrWarningDialog(
+        context: context,
+        subtitle: e.toString(),
+        isError: true,
+        fct: () {},
+      );
+      return;
+    }
     if (!mounted) {
       return;
     }
@@ -108,7 +145,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: SubtitleTextWidget(
-                    label: "We are glad you will become part of our story.",
+                    label: "Welcome back",
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -169,7 +208,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.of(context).pushNamed(
+                              ForgotPasswordScreen.routeName,
+                            );
+                          },
                           child: const SubtitleTextWidget(
                             label: "Forgot password?",
                             fontStyle: FontStyle.italic,
@@ -197,32 +240,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16.0),
                       SubtitleTextWidget(
-                        label: "Or connect using".toUpperCase(),
+                        label: "Continue as guest".toUpperCase(),
                       ),
                       const SizedBox(height: 16.0),
                       SizedBox(
-                        height: kBottomNavigationBarHeight + 10,
-                        child: Row(
-                          children: [
-                            const Expanded(
-                              flex: 2,
-                              child: SizedBox(
-                                height: kBottomNavigationBarHeight,
-                                child: FittedBox(child: GoogleButton()),
-                              ),
+                        width: double.infinity,
+                        height: kBottomNavigationBarHeight,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: SizedBox(
-                                height: kBottomNavigationBarHeight,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.all(12.0),
-                                    // backgroundColor: Colors.red,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                  ),
+                          ),
                           child: const Text("Guest?"),
                           onPressed: () async {
                             await UserPrefs.setGuest();
@@ -235,11 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                       ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
+                      const SizedBox(height: 12.0),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

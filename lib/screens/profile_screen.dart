@@ -3,13 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/admin_config.dart';
 import 'package:shoeshop/consts/app_colors.dart';
+import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
 import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
+import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 import 'package:shoeshop/services/assets_menager.dart';
@@ -55,6 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isAdmin = _isLoggedIn && AdminConfig.isAdminEmail(_email);
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
@@ -119,6 +123,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const Divider(),
                   const SizedBox(height: 10),
+                  Visibility(
+                    visible: isAdmin,
+                    child: CustomListTile(
+                      leadingIcon: Icons.admin_panel_settings_outlined,
+                      text: "Admin Dashboard",
+                      function: () {
+                        Navigator.pushNamed(
+                          context,
+                          AdminDashboardScreen.routeName,
+                        );
+                      },
+                    ),
+                  ),
+                  if (isAdmin) const SizedBox(height: 6),
                   const TitelesTextWidget(label: "General"),
                   const SizedBox(height: 10),
                   CustomListTile(
@@ -207,6 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (!mounted) {
                           return;
                         }
+                        context.read<CartProvider>().clear();
                         context.read<WishlistProvider>().clear();
                         context.read<ViewedRecentlyProvider>().clear();
                         setState(() {
@@ -233,21 +252,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class CustomListTile extends StatelessWidget {
   const CustomListTile({
     super.key,
-    required this.imagePath,
+    this.imagePath,
+    this.leadingIcon,
     required this.text,
     required this.function,
-  });
-  final String imagePath, text;
+  }) : assert(
+         imagePath != null || leadingIcon != null,
+         "Either imagePath or leadingIcon must be provided.",
+       );
+  final String? imagePath;
+  final IconData? leadingIcon;
+  final String text;
   final Function function;
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
       onTap: () {
         function();
       },
       title: SubtitleTextWidget(label: text),
-      leading: Image.asset(imagePath, height: 34),
-      trailing: const Icon(IconlyLight.arrowRight2),
+      leading: imagePath != null
+          ? Image.asset(
+              imagePath!,
+              height: 34,
+              color: isDarkMode ? Colors.white : null,
+            )
+          : Icon(
+              leadingIcon,
+              size: 30,
+              color: isDarkMode ? Colors.white : AppColors.darkPrimary,
+            ),
+      trailing: Icon(
+        IconlyLight.arrowRight2,
+        color: isDarkMode ? Colors.white : null,
+      ),
     );
   }
 }

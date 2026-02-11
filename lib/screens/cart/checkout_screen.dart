@@ -15,6 +15,8 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  static const double _freeShippingThreshold = 20000;
+  static const double _shippingFee = 400;
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -114,6 +116,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final discountAmount = cartProvider.discountAmount;
     final totalBeforeDiscount = cartProvider.totalPrice;
     final totalAfterDiscount = cartProvider.discountedTotalPrice;
+    final subtotal =
+        discountAmount > 0 ? totalAfterDiscount : totalBeforeDiscount;
+    final shippingCost =
+        subtotal >= _freeShippingThreshold || subtotal == 0 ? 0 : _shippingFee;
+    final grandTotal = subtotal + shippingCost;
     return Scaffold(
       appBar: AppBar(
         title: const TitelesTextWidget(label: "Checkout"),
@@ -238,25 +245,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                const SubtitleTextWidget(
-                  label: "Online payment",
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _submitPayment,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.darkPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SubtitleTextWidget(
+                        label: "Bex kurirska sluzba",
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
                       ),
-                    ),
-                    child: const Text("Pay online"),
+                      const SizedBox(height: 2),
+                      const SubtitleTextWidget(
+                        label: "Isporuka za 2-3 dana.",
+                      ),
+                      const SizedBox(height: 2),
+                      SubtitleTextWidget(
+                        label: subtotal >= _freeShippingThreshold
+                            ? "Postarina: Besplatna za iznos iznad 20000 RSD."
+                            : "Postarina: 400 RSD za iznos ispod 20000 RSD.",
+                        color: AppColors.darkPrimary,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -284,10 +301,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       SubtitleTextWidget(
                         label:
-                            "${(discountAmount > 0 ? totalAfterDiscount : totalBeforeDiscount).toStringAsFixed(2)} RSD",
+                            "Postarina ${shippingCost.toStringAsFixed(2)} RSD",
+                      ),
+                      SubtitleTextWidget(
+                        label: "${grandTotal.toStringAsFixed(2)} RSD",
                         color: AppColors.darkPrimary,
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submitPayment,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.darkPrimary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    child: const Text("Pay online"),
                   ),
                 ),
               ],

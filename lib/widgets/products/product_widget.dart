@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +8,7 @@ import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/screens/cart/size_btm_sheet.dart';
+import 'package:shoeshop/services/stock_service.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
@@ -16,18 +19,22 @@ class ProductWidget extends StatefulWidget {
     super.key,
     required this.productId,
     this.imageAsset,
+    this.imageUrl,
     this.title,
     this.description,
     this.price,
     this.displayId,
+    this.sizes,
   });
 
   final String productId;
   final String? imageAsset;
+  final String? imageUrl;
   final String? title;
   final String? description;
   final double? price;
   final String? displayId;
+  final List<int>? sizes;
 
   @override
   State<ProductWidget> createState() => _ProductWidgetState();
@@ -36,6 +43,7 @@ class ProductWidget extends StatefulWidget {
 class _ProductWidgetState extends State<ProductWidget> {
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final displayTitle =
         widget.title ?? AppConstants.titleFromId(widget.productId);
     final displayDescription =
@@ -49,7 +57,24 @@ class _ProductWidgetState extends State<ProductWidget> {
           final imageHeight = constraints.maxWidth * 0.78;
           final assetPath = widget.imageAsset ??
               (widget.productId.startsWith("assets/") ? widget.productId : null);
+          final networkImage =
+              widget.imageUrl != null &&
+                      (widget.imageUrl!.startsWith("http://") ||
+                          widget.imageUrl!.startsWith("https://"))
+                  ? widget.imageUrl!
+                  : null;
+          final fileImagePath =
+              widget.imageUrl != null &&
+                      widget.imageUrl!.isNotEmpty &&
+                      !widget.imageUrl!.startsWith("http://") &&
+                      !widget.imageUrl!.startsWith("https://")
+                  ? widget.imageUrl!
+                  : null;
           Future<int?> pickSize() async {
+            final availableSizes =
+                (widget.sizes != null && widget.sizes!.isNotEmpty)
+                    ? widget.sizes!
+                    : AppConstants.sizesFromId(widget.productId);
             return showModalBottomSheet<int>(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               shape: const RoundedRectangleBorder(
@@ -61,7 +86,7 @@ class _ProductWidgetState extends State<ProductWidget> {
               context: context,
               builder: (context) {
                 return SizeSheetBottomWidget(
-                  sizes: AppConstants.sizesFromId(widget.productId),
+                  sizes: availableSizes,
                 );
               },
             );
@@ -77,6 +102,8 @@ class _ProductWidgetState extends State<ProductWidget> {
                   description: displayDescription,
                   price: displayPrice,
                   imageAsset: widget.imageAsset,
+                  imageUrl: widget.imageUrl,
+                  sizes: widget.sizes,
                 ),
               );
             },
@@ -93,10 +120,15 @@ class _ProductWidgetState extends State<ProductWidget> {
                             assetPath,
                             fit: BoxFit.cover,
                           )
-                        : FancyShimmerImage(
-                            imageUrl: AppConstants.imageUrl,
-                            boxFit: BoxFit.cover,
-                          ),
+                        : fileImagePath != null
+                            ? Image.file(
+                                File(fileImagePath),
+                                fit: BoxFit.cover,
+                              )
+                            : FancyShimmerImage(
+                                imageUrl: networkImage ?? AppConstants.imageUrl,
+                                boxFit: BoxFit.cover,
+                              ),
                   ),
                 ),
                 const SizedBox(height: 12.0),
@@ -126,7 +158,7 @@ class _ProductWidgetState extends State<ProductWidget> {
                   child: SubtitleTextWidget(
                     label: displayDescription,
                     fontSize: 11,
-                    color: Colors.black,
+                    color: isDarkMode ? Colors.white : Colors.black,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -173,19 +205,33 @@ class _ProductWidgetState extends State<ProductWidget> {
                         if (!context.mounted || size == null) {
                           return;
                         }
-                        context.read<CartProvider>().addItem(
+                        final stockQty = await StockService.fetchStockQty(
+                          productId: widget.productId,
+                          size: size,
+                        );
+                        if (!context.mounted) {
+                          return;
+                        }
+                        final added = context.read<CartProvider>().addItem(
                               productId: widget.productId,
                               title: displayTitle,
                               price: displayPrice,
                               imageUrl:
-                                  widget.imageAsset ?? AppConstants.imageUrl,
+                                  widget.imageAsset ??
+                                  widget.imageUrl ??
+                                  AppConstants.imageUrl,
                               size: size,
+                              maxQuantity: stockQty,
                             );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Added to cart"),
-                              ),
-                            );
+                          SnackBar(
+                            content: Text(
+                              added
+                                  ? "Added to cart"
+                                  : "Ne moze toliko da se doda za izabrani broj.",
+                            ),
+                          ),
+                        );
                           },
                           splashColor: Colors.blueGrey,
                           child: const Padding(

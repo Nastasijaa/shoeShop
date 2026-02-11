@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +9,7 @@ import 'package:shoeshop/consts/app_constants.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/screens/cart/size_btm_sheet.dart';
+import 'package:shoeshop/services/stock_service.dart';
 import 'package:shoeshop/services/user_prefs.dart';
 import 'package:shoeshop/widgets/products/heart_btn.dart';
 import 'package:shoeshop/widgets/subtitle_text.dart';
@@ -16,16 +19,20 @@ class LatestArrivalProductsWidget extends StatelessWidget {
     super.key,
     required this.productId,
     this.imageAsset,
+    this.imageUrl,
     this.title,
     this.description,
     this.price,
+    this.sizes,
   });
 
   final String productId;
   final String? imageAsset;
+  final String? imageUrl;
   final String? title;
   final String? description;
   final double? price;
+  final List<int>? sizes;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +41,16 @@ class LatestArrivalProductsWidget extends StatelessWidget {
     final displayDescription =
         description ?? AppConstants.descriptionFromId(productId);
     final displayPrice = price ?? AppConstants.priceFromId(productId);
+    final isNetworkImage =
+        imageUrl != null &&
+        (imageUrl!.startsWith("http://") || imageUrl!.startsWith("https://"));
+    final isLocalImage =
+        imageUrl != null && imageUrl!.isNotEmpty && !isNetworkImage;
     Future<int?> pickSize() async {
+      final availableSizes =
+          (sizes != null && sizes!.isNotEmpty)
+              ? sizes!
+              : AppConstants.sizesFromId(productId);
       return showModalBottomSheet<int>(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: const RoundedRectangleBorder(
@@ -46,7 +62,7 @@ class LatestArrivalProductsWidget extends StatelessWidget {
         context: context,
         builder: (context) {
           return SizeSheetBottomWidget(
-            sizes: AppConstants.sizesFromId(productId),
+            sizes: availableSizes,
           );
         },
       );
@@ -64,6 +80,8 @@ class LatestArrivalProductsWidget extends StatelessWidget {
               description: displayDescription,
               price: displayPrice,
               imageAsset: imageAsset,
+              imageUrl: imageUrl,
+              sizes: sizes,
             ),
           );
         },
@@ -82,11 +100,18 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                           width: size.width * 0.32,
                           fit: BoxFit.cover,
                         )
-                      : FancyShimmerImage(
-                          imageUrl: AppConstants.imageUrl,
-                          height: size.width * 0.24,
-                          width: size.width * 0.32,
-                        ),
+                      : isLocalImage
+                          ? Image.file(
+                              File(imageUrl!),
+                              height: size.width * 0.24,
+                              width: size.width * 0.32,
+                              fit: BoxFit.cover,
+                            )
+                          : FancyShimmerImage(
+                              imageUrl: imageUrl ?? AppConstants.imageUrl,
+                              height: size.width * 0.24,
+                              width: size.width * 0.32,
+                            ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -134,17 +159,31 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                               if (!context.mounted || size == null) {
                                 return;
                               }
-                              context.read<CartProvider>().addItem(
+                              final stockQty = await StockService.fetchStockQty(
+                                productId: productId,
+                                size: size,
+                              );
+                              if (!context.mounted) {
+                                return;
+                              }
+                              final added = context.read<CartProvider>().addItem(
                                     productId: productId,
                                     title: displayTitle,
                                     price: displayPrice,
                                     imageUrl:
-                                        imageAsset ?? AppConstants.imageUrl,
+                                        imageAsset ??
+                                        imageUrl ??
+                                        AppConstants.imageUrl,
                                     size: size,
+                                    maxQuantity: stockQty,
                                   );
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Added to cart"),
+                                SnackBar(
+                                  content: Text(
+                                    added
+                                        ? "Added to cart"
+                                        : "Ne moze toliko da se doda za izabrani broj.",
+                                  ),
                                 ),
                               );
                             },
