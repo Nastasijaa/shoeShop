@@ -19,6 +19,7 @@ import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/product_details.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
+import 'package:shoeshop/screens/inner_screen/address_screen.dart';
 import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/root_screen.dart';
 
@@ -28,9 +29,9 @@ Future<void> main() async {
     try {
       Stripe.publishableKey = StripeConfig.publishableKey;
       Stripe.merchantIdentifier = StripeConfig.merchantIdentifier;
-      await Stripe.instance
-          .applySettings()
-          .timeout(const Duration(seconds: 10));
+      await Stripe.instance.applySettings().timeout(
+        const Duration(seconds: 10),
+      );
     } catch (e) {
       debugPrint("Stripe init skipped: $e");
     }
@@ -95,6 +96,7 @@ class MyApp extends StatelessWidget {
               LoginScreen.routeName: (context) => const LoginScreen(),
               OrdersScreen.routeName: (context) => const OrdersScreen(),
               CheckoutScreen.routeName: (context) => const CheckoutScreen(),
+              AddressScreen.routeName: (context) => const AddressScreen(),
               AdminDashboardScreen.routeName: (context) =>
                   const AdminDashboardScreen(),
               AdminProductsManageScreen.routeName: (context) =>

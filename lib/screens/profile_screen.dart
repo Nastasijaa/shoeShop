@@ -9,6 +9,7 @@ import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
+import 'package:shoeshop/screens/inner_screen/address_screen.dart';
 import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/root_screen.dart';
@@ -61,9 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ClipOval(
-            child: Image.asset(AssetsMenager.logo),
-          ),
+          child: ClipOval(child: Image.asset(AssetsMenager.logo)),
         ),
         title: const Text("Profile Screen"),
       ),
@@ -94,9 +93,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           image: _imagePath.isNotEmpty
                               ? FileImage(File(_imagePath))
                               : const NetworkImage(
-                                    "https://cdn.pixabay.com/photo/2017/11/10/05/48/user-2935527_1280.png",
-                                  )
-                                  as ImageProvider,
+                                      "https://cdn.pixabay.com/photo/2017/11/10/05/48/user-2935527_1280.png",
+                                    )
+                                    as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -168,7 +167,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CustomListTile(
                     imagePath: "${AssetsMenager.imagePath}/address.png",
                     text: "Address",
-                    function: () {},
+                    function: () {
+                      Navigator.pushNamed(context, AddressScreen.routeName);
+                    },
                   ),
                   const SizedBox(height: 6),
                   const Divider(),
@@ -215,9 +216,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (!mounted) {
                       return;
                     }
-                    Navigator.of(context).pushReplacementNamed(
-                      LoginScreen.routeName,
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushReplacementNamed(LoginScreen.routeName);
                     return;
                   }
                   await MyAppFunctions.showErrorOrWarningDialog(
@@ -238,9 +239,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _name = "Guest";
                           _email = "guest@example.com";
                         });
-                        Navigator.of(context).pushReplacementNamed(
-                          RootScreen.routeName,
-                        );
+                        Navigator.of(
+                          context,
+                        ).pushReplacementNamed(RootScreen.routeName);
                       });
                     },
                   );
