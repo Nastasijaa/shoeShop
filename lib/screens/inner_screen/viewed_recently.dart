@@ -33,9 +33,9 @@ class ViewedRecentlyScreen extends StatelessWidget {
               subtitle: "Browse products to see them here.",
               buttonText: "Browse products",
               onPressed: () {
-                Navigator.of(context).pushReplacementNamed(
-                  RootScreen.routeName,
-                );
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed(RootScreen.routeName);
               },
             ),
           )
@@ -66,6 +66,9 @@ class ViewedRecentlyScreen extends StatelessWidget {
                   imageUrl: item.imageUrl,
                   price: item.price,
                   sizes: item.sizes,
+                  gender: item.gender,
+                  type: item.type,
+                  categoryLabel: item.categoryLabel,
                 );
               },
               itemCount: items.length,

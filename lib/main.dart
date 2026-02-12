@@ -1,12 +1,15 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
+import 'package:shoeshop/consts/stripe_config.dart';
 import 'package:shoeshop/consts/theme_data.dart';
 import 'package:shoeshop/firebase_options.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
 import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/providers/viewed_recently_provider.dart';
-import 'package:shoeshop/screens/auth/forgot_password.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/auth/register.dart';
 import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
@@ -21,9 +24,24 @@ import 'package:shoeshop/screens/root_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  if (StripeConfig.hasValidPublishableKey) {
+    try {
+      Stripe.publishableKey = StripeConfig.publishableKey;
+      Stripe.merchantIdentifier = StripeConfig.merchantIdentifier;
+      await Stripe.instance
+          .applySettings()
+          .timeout(const Duration(seconds: 10));
+    } catch (e) {
+      debugPrint("Stripe init skipped: $e");
+    }
+  }
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).timeout(const Duration(seconds: 15));
+  } catch (e) {
+    debugPrint("Firebase init failed: $e");
+  }
   runApp(const MyApp());
 }
 
@@ -81,7 +99,6 @@ class MyApp extends StatelessWidget {
                   const AdminDashboardScreen(),
               AdminProductsManageScreen.routeName: (context) =>
                   const AdminProductsManageScreen(),
-              ForgotPasswordScreen.routeName: (context) => const ForgotPasswordScreen(),
             },
           );
         },
@@ -89,4 +106,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

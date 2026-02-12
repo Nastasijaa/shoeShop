@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/admin_config.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/consts/validator.dart';
-import 'package:shoeshop/providers/viewed_recently_provider.dart';
-import 'package:shoeshop/providers/wishlist_provider.dart';
-import 'package:shoeshop/screens/auth/forgot_password.dart';
 import 'package:shoeshop/screens/auth/register.dart';
 import 'package:shoeshop/screens/root_screen.dart';
+import 'package:shoeshop/services/auth_service.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/services/my_app_function.dart';
 import 'package:shoeshop/services/user_prefs.dart';
@@ -87,6 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
       await UserPrefs.saveUser(name: name, email: email, imagePath: imagePath);
+      if (!mounted) {
+        return;
+      }
+      AuthService.applyUserSession(context, email);
     } catch (e) {
       if (!mounted) return;
       await MyAppFunctions.showErrorOrWarningDialog(
@@ -100,8 +101,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) {
       return;
     }
-    context.read<WishlistProvider>().clear();
-    context.read<ViewedRecentlyProvider>().clear();
     Navigator.of(context).pushReplacementNamed(RootScreen.routeName);
   }
 
@@ -205,22 +204,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pushNamed(
-                              ForgotPasswordScreen.routeName,
-                            );
-                          },
-                          child: const SubtitleTextWidget(
-                            label: "Forgot password?",
-                            fontStyle: FontStyle.italic,
-                            textDecoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -259,6 +242,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (!mounted) {
                               return;
                             }
+                            AuthService.applyGuestSession(
+                              context,
+                              clearGuestData: true,
+                            );
                             Navigator.of(context).pushReplacementNamed(
                               RootScreen.routeName,
                             );

@@ -43,18 +43,18 @@ class CartWidget extends StatelessWidget {
                         fit: BoxFit.contain,
                       )
                     : isNetworkImage
-                        ? FancyShimmerImage(
-                            imageUrl: cartItem.imageUrl,
-                            height: size.height * 0.2,
-                            width: size.height * 0.2,
-                            boxFit: BoxFit.contain,
-                          )
-                        : Image.file(
-                            File(cartItem.imageUrl),
-                            height: size.height * 0.2,
-                            width: size.height * 0.2,
-                            fit: BoxFit.contain,
-                          ),
+                    ? FancyShimmerImage(
+                        imageUrl: cartItem.imageUrl,
+                        height: size.height * 0.2,
+                        width: size.height * 0.2,
+                        boxFit: BoxFit.contain,
+                      )
+                    : Image.file(
+                        File(cartItem.imageUrl),
+                        height: size.height * 0.2,
+                        width: size.height * 0.2,
+                        fit: BoxFit.contain,
+                      ),
               ),
               const SizedBox(width: 10),
               IntrinsicWidth(
@@ -80,7 +80,21 @@ class CartWidget extends StatelessWidget {
                                 color: AppColors.darkPrimary,
                               ),
                             ),
-                            HeartButtonWidget(productId: cartItem.productId),
+                            HeartButtonWidget(
+                              productId: cartItem.productId,
+                              title: cartItem.title,
+                              description: cartItem.description,
+                              imageAsset:
+                                  cartItem.imageUrl.startsWith("assets/")
+                                  ? cartItem.imageUrl
+                                  : null,
+                              imageUrl: cartItem.imageUrl,
+                              price: cartItem.price,
+                              sizes: cartItem.sizes ?? [cartItem.size],
+                              gender: cartItem.gender,
+                              type: cartItem.type,
+                              categoryLabel: cartItem.categoryLabel,
+                            ),
                           ],
                         ),
                       ],
@@ -112,7 +126,9 @@ class CartWidget extends StatelessWidget {
                             if (stockQty != null && stockQty <= 0) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Nema vise na stanju za ovaj broj."),
+                                  content: Text(
+                                    "Nema vise na stanju za ovaj broj.",
+                                  ),
                                 ),
                               );
                               return;

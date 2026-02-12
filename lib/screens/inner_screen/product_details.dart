@@ -45,7 +45,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     final isLocalImage =
         imageUrl != null && imageUrl.isNotEmpty && !isNetworkImage;
     final sizes = args?.sizes;
-    final categoryLabel = AppConstants.categoryLabelFromId(productId);
+    final categoryLabel =
+        args?.categoryLabel ??
+        AppConstants.categoryLabelFromMeta(
+          gender: args?.gender,
+          type: args?.type,
+          id: productId,
+        );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark ? Colors.white : AppColors.darkPrimary;
     final bodyTextColor = isDark ? Colors.white : Colors.black;
@@ -54,16 +60,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     if (_lastViewedId != productId) {
       _lastViewedId = productId;
       context.read<ViewedRecentlyProvider>().addViewed(
-            ViewedProduct(
-              id: productId,
-              title: title,
-              description: description,
-              price: price,
-              imageAsset: imageAsset,
-              imageUrl: imageUrl,
-              sizes: sizes,
-            ),
-          );
+        ViewedProduct(
+          id: productId,
+          title: title,
+          description: description,
+          price: price,
+          imageAsset: imageAsset,
+          imageUrl: imageUrl,
+          sizes: sizes,
+          gender: args?.gender,
+          type: args?.type,
+          categoryLabel: categoryLabel,
+        ),
+      );
     }
 
     final viewedItems = context.watch<ViewedRecentlyProvider>().items;
@@ -96,17 +105,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     fit: BoxFit.cover,
                   )
                 : isLocalImage
-                    ? Image.file(
-                        File(imageUrl),
-                        height: size.height * 0.38,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      )
-                    : FancyShimmerImage(
-                        imageUrl: imageUrl ?? AppConstants.imageUrl,
-                        height: size.height * 0.38,
-                        width: double.infinity,
-                      ),
+                ? Image.file(
+                    File(imageUrl),
+                    height: size.height * 0.38,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                : FancyShimmerImage(
+                    imageUrl: imageUrl ?? AppConstants.imageUrl,
+                    height: size.height * 0.38,
+                    width: double.infinity,
+                  ),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -177,6 +186,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         HeartButtonWidget(
                           productId: productId,
                           bkgColor: AppColors.darkPrimary,
+                          title: title,
+                          description: description,
+                          imageAsset: imageAsset,
+                          imageUrl: imageUrl,
+                          price: price,
+                          sizes: sizes,
+                          gender: args?.gender,
+                          type: args?.type,
+                          categoryLabel: categoryLabel,
                         ),
                         const SizedBox(width: 20),
                         Expanded(
@@ -216,21 +234,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 }
                                 final stockQty =
                                     await StockService.fetchStockQty(
-                                  productId: productId,
-                                  size: _selectedSize!,
-                                );
+                                      productId: productId,
+                                      size: _selectedSize!,
+                                    );
                                 if (!context.mounted) {
                                   return;
                                 }
-                                final added = context.read<CartProvider>().addItem(
+                                final added = context
+                                    .read<CartProvider>()
+                                    .addItem(
                                       productId: productId,
                                       title: title,
+                                      description: description,
                                       price: price,
                                       imageUrl:
                                           imageAsset ??
                                           imageUrl ??
                                           AppConstants.imageUrl,
                                       size: _selectedSize!,
+                                      sizes: sizes,
+                                      gender: args?.gender,
+                                      type: args?.type,
+                                      categoryLabel: categoryLabel,
                                       maxQuantity: stockQty,
                                     );
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -272,10 +297,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ],
                   ),
                   const SizedBox(height: 15),
-                  SubtitleTextWidget(
-                    label: description,
-                    color: bodyTextColor,
-                  ),
+                  SubtitleTextWidget(label: description, color: bodyTextColor),
                   const SizedBox(height: 12),
                   const Align(
                     alignment: Alignment.centerLeft,
@@ -300,8 +322,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           child: LatestArrivalProductsWidget(
                             productId: assetPath,
                             title: AppConstants.titleFromId(assetPath),
-                            description:
-                                AppConstants.descriptionFromId(assetPath),
+                            description: AppConstants.descriptionFromId(
+                              assetPath,
+                            ),
                             imageAsset: assetPath,
                           ),
                         );
@@ -338,7 +361,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               title: item.title,
                               description: item.description,
                               imageAsset: item.imageAsset,
+                              imageUrl: item.imageUrl,
                               price: item.price,
+                              sizes: item.sizes,
+                              gender: item.gender,
+                              type: item.type,
+                              categoryLabel: item.categoryLabel,
                             ),
                           );
                         },
@@ -403,6 +431,9 @@ class ProductDetailsArgs {
     this.imageAsset,
     this.imageUrl,
     this.sizes,
+    this.gender,
+    this.type,
+    this.categoryLabel,
   });
 
   final String id;
@@ -412,4 +443,7 @@ class ProductDetailsArgs {
   final String? imageAsset;
   final String? imageUrl;
   final List<int>? sizes;
+  final String? gender;
+  final String? type;
+  final String? categoryLabel;
 }

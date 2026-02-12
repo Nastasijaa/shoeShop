@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
@@ -24,6 +23,9 @@ class LatestArrivalProductsWidget extends StatelessWidget {
     this.description,
     this.price,
     this.sizes,
+    this.gender,
+    this.type,
+    this.categoryLabel,
   });
 
   final String productId;
@@ -33,6 +35,9 @@ class LatestArrivalProductsWidget extends StatelessWidget {
   final String? description;
   final double? price;
   final List<int>? sizes;
+  final String? gender;
+  final String? type;
+  final String? categoryLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +52,9 @@ class LatestArrivalProductsWidget extends StatelessWidget {
     final isLocalImage =
         imageUrl != null && imageUrl!.isNotEmpty && !isNetworkImage;
     Future<int?> pickSize() async {
-      final availableSizes =
-          (sizes != null && sizes!.isNotEmpty)
-              ? sizes!
-              : AppConstants.sizesFromId(productId);
+      final availableSizes = (sizes != null && sizes!.isNotEmpty)
+          ? sizes!
+          : AppConstants.sizesFromId(productId);
       return showModalBottomSheet<int>(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: const RoundedRectangleBorder(
@@ -61,12 +65,11 @@ class LatestArrivalProductsWidget extends StatelessWidget {
         ),
         context: context,
         builder: (context) {
-          return SizeSheetBottomWidget(
-            sizes: availableSizes,
-          );
+          return SizeSheetBottomWidget(sizes: availableSizes);
         },
       );
     }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
@@ -82,6 +85,9 @@ class LatestArrivalProductsWidget extends StatelessWidget {
               imageAsset: imageAsset,
               imageUrl: imageUrl,
               sizes: sizes,
+              gender: gender,
+              type: type,
+              categoryLabel: categoryLabel,
             ),
           );
         },
@@ -101,17 +107,17 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                           fit: BoxFit.cover,
                         )
                       : isLocalImage
-                          ? Image.file(
-                              File(imageUrl!),
-                              height: size.width * 0.24,
-                              width: size.width * 0.32,
-                              fit: BoxFit.cover,
-                            )
-                          : FancyShimmerImage(
-                              imageUrl: imageUrl ?? AppConstants.imageUrl,
-                              height: size.width * 0.24,
-                              width: size.width * 0.32,
-                            ),
+                      ? Image.file(
+                          File(imageUrl!),
+                          height: size.width * 0.24,
+                          width: size.width * 0.32,
+                          fit: BoxFit.cover,
+                        )
+                      : FancyShimmerImage(
+                          imageUrl: imageUrl ?? AppConstants.imageUrl,
+                          height: size.width * 0.24,
+                          width: size.width * 0.32,
+                        ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -136,7 +142,18 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                     FittedBox(
                       child: Row(
                         children: [
-                          HeartButtonWidget(productId: productId),
+                          HeartButtonWidget(
+                            productId: productId,
+                            title: displayTitle,
+                            description: displayDescription,
+                            imageAsset: imageAsset,
+                            imageUrl: imageUrl,
+                            price: displayPrice,
+                            sizes: sizes,
+                            gender: gender,
+                            type: type,
+                            categoryLabel: categoryLabel,
+                          ),
                           IconButton(
                             onPressed: () async {
                               if (await UserPrefs.isGuest()) {
@@ -166,15 +183,22 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                               if (!context.mounted) {
                                 return;
                               }
-                              final added = context.read<CartProvider>().addItem(
+                              final added = context
+                                  .read<CartProvider>()
+                                  .addItem(
                                     productId: productId,
                                     title: displayTitle,
+                                    description: displayDescription,
                                     price: displayPrice,
                                     imageUrl:
                                         imageAsset ??
                                         imageUrl ??
                                         AppConstants.imageUrl,
                                     size: size,
+                                    sizes: sizes,
+                                    gender: gender,
+                                    type: type,
+                                    categoryLabel: categoryLabel,
                                     maxQuantity: stockQty,
                                   );
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -195,8 +219,7 @@ class LatestArrivalProductsWidget extends StatelessWidget {
                     const SizedBox(height: 5),
                     FittedBox(
                       child: SubtitleTextWidget(
-                        label:
-                            "${displayPrice.toStringAsFixed(2)} RSD",
+                        label: "${displayPrice.toStringAsFixed(2)} RSD",
                         fontWeight: FontWeight.w600,
                         color: AppColors.darkPrimary,
                       ),

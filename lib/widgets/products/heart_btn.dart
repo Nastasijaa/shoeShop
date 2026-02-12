@@ -10,10 +10,28 @@ class HeartButtonWidget extends StatefulWidget {
     required this.productId,
     this.bkgColor = Colors.transparent,
     this.size = 20,
+    this.title,
+    this.description,
+    this.imageAsset,
+    this.imageUrl,
+    this.price,
+    this.sizes,
+    this.gender,
+    this.type,
+    this.categoryLabel,
   });
   final String productId;
   final Color bkgColor;
   final double size;
+  final String? title;
+  final String? description;
+  final String? imageAsset;
+  final String? imageUrl;
+  final double? price;
+  final List<int>? sizes;
+  final String? gender;
+  final String? type;
+  final String? categoryLabel;
   @override
   State<HeartButtonWidget> createState() => _HeartButtonWidgetState();
 }
@@ -27,8 +45,10 @@ class _HeartButtonWidgetState extends State<HeartButtonWidget> {
         final isInWishlist = wishlistProvider.isInWishlist(widget.productId);
         final iconColor = isDark ? Colors.white : Colors.black;
         return Container(
-          decoration:
-              BoxDecoration(color: widget.bkgColor, shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: widget.bkgColor,
+            shape: BoxShape.circle,
+          ),
           child: IconButton(
             style: IconButton.styleFrom(elevation: 10),
             onPressed: () async {
@@ -45,7 +65,18 @@ class _HeartButtonWidgetState extends State<HeartButtonWidget> {
                 );
                 return;
               }
-              wishlistProvider.toggle(widget.productId);
+              wishlistProvider.toggle(
+                productId: widget.productId,
+                title: widget.title,
+                description: widget.description,
+                imageAsset: widget.imageAsset,
+                imageUrl: widget.imageUrl,
+                price: widget.price,
+                sizes: widget.sizes,
+                gender: widget.gender,
+                type: widget.type,
+                categoryLabel: widget.categoryLabel,
+              );
             },
             icon: Icon(
               isInWishlist ? IconlyBold.heart : IconlyLight.heart,

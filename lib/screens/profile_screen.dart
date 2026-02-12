@@ -5,16 +5,14 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:shoeshop/consts/admin_config.dart';
 import 'package:shoeshop/consts/app_colors.dart';
-import 'package:shoeshop/providers/cart_provider.dart';
 import 'package:shoeshop/providers/theme_provider.dart';
-import 'package:shoeshop/providers/viewed_recently_provider.dart';
-import 'package:shoeshop/providers/wishlist_provider.dart';
 import 'package:shoeshop/screens/inner_screen/orders/orders_screen.dart';
 import 'package:shoeshop/screens/inner_screen/viewed_recently.dart';
 import 'package:shoeshop/screens/inner_screen/wishlist.dart';
 import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
 import 'package:shoeshop/screens/auth/login.dart';
 import 'package:shoeshop/screens/root_screen.dart';
+import 'package:shoeshop/services/auth_service.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 import 'package:shoeshop/services/my_app_function.dart';
 import 'package:shoeshop/services/user_prefs.dart';
@@ -142,7 +140,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CustomListTile(
                     imagePath: "${AssetsMenager.imagePath}/bag/checkout.png",
                     text: "All Orders",
-                    function: () { Navigator.pushNamed(context, OrdersScreen.routeName);},
+                    function: () {
+                      Navigator.pushNamed(
+                        context,
+                        OrdersScreen.routeName,
+                        arguments: {"isAdminView": isAdmin},
+                      );
+                    },
                   ),
                   CustomListTile(
                     imagePath: "${AssetsMenager.imagePath}/bag/wishlist.png",
@@ -225,9 +229,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (!mounted) {
                           return;
                         }
-                        context.read<CartProvider>().clear();
-                        context.read<WishlistProvider>().clear();
-                        context.read<ViewedRecentlyProvider>().clear();
+                        AuthService.applyGuestSession(
+                          context,
+                          clearGuestData: true,
+                        );
                         setState(() {
                           _isLoggedIn = false;
                           _name = "Guest";

@@ -35,9 +35,9 @@ class WishlistScreen extends StatelessWidget {
               subtitle: "Looks like your wishlist is empty.",
               buttonText: "Shop now",
               onPressed: () {
-                Navigator.of(context).pushReplacementNamed(
-                  RootScreen.routeName,
-                );
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed(RootScreen.routeName);
               },
             ),
           );
@@ -66,7 +66,19 @@ class WishlistScreen extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             builder: (context, index) {
-              return ProductWidget(productId: items[index]);
+              final item = items[index];
+              return ProductWidget(
+                productId: item.productId,
+                title: item.title,
+                description: item.description,
+                imageAsset: item.imageAsset,
+                imageUrl: item.imageUrl,
+                price: item.price,
+                sizes: item.sizes,
+                gender: item.gender,
+                type: item.type,
+                categoryLabel: item.categoryLabel,
+              );
             },
             itemCount: items.length,
             crossAxisCount: 2,

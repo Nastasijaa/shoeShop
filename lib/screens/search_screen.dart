@@ -36,18 +36,15 @@ class _SearchScreenState extends State<SearchScreen> {
       ...AppConstants.menSneakersAssets,
       ...AppConstants.menFlatAssets,
     ];
-    _allProducts = List.generate(
-      _searchAssets.length,
-      (index) {
-        final assetPath = _searchAssets[index];
-        return _SearchProduct(
-          id: assetPath,
-          title: AppConstants.titleFromId(assetPath),
-          description: AppConstants.descriptionFromId(assetPath),
-          imageAsset: assetPath,
-        );
-      },
-    );
+    _allProducts = List.generate(_searchAssets.length, (index) {
+      final assetPath = _searchAssets[index];
+      return _SearchProduct(
+        id: assetPath,
+        title: AppConstants.titleFromId(assetPath),
+        description: AppConstants.descriptionFromId(assetPath),
+        imageAsset: assetPath,
+      );
+    });
     _filteredProducts = _allProducts;
     _loadFirestoreProducts();
     super.initState();
@@ -117,8 +114,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: -2),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -2,
+                          ),
                           title: Text(AppConstants.genderLabel(gender)),
                           value: _selectedGenders.contains(gender),
                           onChanged: (checked) {
@@ -147,8 +146,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: -2),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -2,
+                          ),
                           title: Text(AppConstants.typeLabel(type)),
                           value: _selectedTypes.contains(type),
                           onChanged: (checked) {
@@ -174,8 +175,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: -2),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -2,
+                          ),
                           secondary: Container(
                             width: 14,
                             height: 14,
@@ -212,8 +215,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          visualDensity:
-                              const VisualDensity(horizontal: 0, vertical: -2),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -2,
+                          ),
                           title: Text(
                             AppConstants.materialFilterLabel(material),
                           ),
@@ -297,14 +302,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     : _filteredProducts.isEmpty
                     ? Center(
                         child: SubtitleTextWidget(
-                          label: (_selectedColors.isNotEmpty ||
-                                      _selectedMaterials.isNotEmpty ||
-                                      _selectedGenders.isNotEmpty ||
-                                      _selectedTypes.isNotEmpty)
+                          label:
+                              (_selectedColors.isNotEmpty ||
+                                  _selectedMaterials.isNotEmpty ||
+                                  _selectedGenders.isNotEmpty ||
+                                  _selectedTypes.isNotEmpty)
                               ? "Nema odabranog filtera."
                               : _query.isNotEmpty
-                                  ? "Nema rezultata za pretragu."
-                                  : "Nema proizvoda.",
+                              ? "Nema rezultata za pretragu."
+                              : "Nema proizvoda.",
                         ),
                       )
                     : DynamicHeightGridView(
@@ -320,6 +326,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             imageUrl: product.imageUrl,
                             price: product.price,
                             sizes: product.sizes,
+                            gender: product.gender,
+                            type: product.type,
+                            categoryLabel: product.categoryLabel,
                           );
                         },
                         itemCount: _filteredProducts.length,
@@ -337,33 +346,41 @@ class _SearchScreenState extends State<SearchScreen> {
     final words = _query.isEmpty
         ? const <String>[]
         : _query
-            .split(RegExp(r"\s+"))
-            .where((word) => word.isNotEmpty)
-            .toList(growable: false);
-    _filteredProducts = _allProducts.where((product) {
-      final gender = product.gender ?? AppConstants.genderFromId(product.id);
-      final type = product.type ?? AppConstants.typeFromId(product.id);
-      final color = product.color ?? AppConstants.colorFromId(product.id);
-      final material =
-          product.material ?? AppConstants.materialTypeFromId(product.id);
+              .split(RegExp(r"\s+"))
+              .where((word) => word.isNotEmpty)
+              .toList(growable: false);
+    _filteredProducts = _allProducts
+        .where((product) {
+          final gender =
+              product.gender ?? AppConstants.genderFromId(product.id);
+          final type = product.type ?? AppConstants.typeFromId(product.id);
+          final color = product.color ?? AppConstants.colorFromId(product.id);
+          final material =
+              product.material ?? AppConstants.materialTypeFromId(product.id);
 
-      final genderOk = _selectedGenders.isEmpty ||
-          (gender != null && _selectedGenders.contains(gender));
-      final typeOk = _selectedTypes.isEmpty ||
-          (type != null && _selectedTypes.contains(type));
-      final colorOk = _selectedColors.isEmpty ||
-          (color != null && _selectedColors.contains(color));
-      final materialOk = _selectedMaterials.isEmpty ||
-          (material != null && _selectedMaterials.contains(material));
-      if (!(genderOk && typeOk && colorOk && materialOk)) {
-        return false;
-      }
-      if (words.isEmpty) {
-        return true;
-      }
-      final haystack = "${product.title} ${product.description}".toLowerCase();
-      return words.every(haystack.contains);
-    }).toList(growable: false);
+          final genderOk =
+              _selectedGenders.isEmpty ||
+              (gender != null && _selectedGenders.contains(gender));
+          final typeOk =
+              _selectedTypes.isEmpty ||
+              (type != null && _selectedTypes.contains(type));
+          final colorOk =
+              _selectedColors.isEmpty ||
+              (color != null && _selectedColors.contains(color));
+          final materialOk =
+              _selectedMaterials.isEmpty ||
+              (material != null && _selectedMaterials.contains(material));
+          if (!(genderOk && typeOk && colorOk && materialOk)) {
+            return false;
+          }
+          if (words.isEmpty) {
+            return true;
+          }
+          final haystack = "${product.title} ${product.description}"
+              .toLowerCase();
+          return words.every(haystack.contains);
+        })
+        .toList(growable: false);
   }
 
   Future<void> _loadFirestoreProducts() async {
@@ -403,6 +420,11 @@ class _SearchScreenState extends State<SearchScreen> {
             sizes: sizes,
             gender: data['gender'] as String?,
             type: data['type'] as String?,
+            categoryLabel: AppConstants.categoryLabelFromMeta(
+              gender: data['gender'] as String?,
+              type: data['type'] as String?,
+              id: doc.id,
+            ),
             color: data['color'] as String?,
             material: data['material'] as String?,
           ),
@@ -467,6 +489,7 @@ class _SearchProduct {
     this.sizes,
     this.gender,
     this.type,
+    this.categoryLabel,
     this.color,
     this.material,
   });
@@ -480,6 +503,7 @@ class _SearchProduct {
   final List<int>? sizes;
   final String? gender;
   final String? type;
+  final String? categoryLabel;
   final String? color;
   final String? material;
 }

@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local backend env/deps
+stripe_backend/node_modules/
+stripe_backend/.env

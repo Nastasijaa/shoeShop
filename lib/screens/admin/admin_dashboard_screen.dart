@@ -701,7 +701,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     icon: const Icon(Icons.receipt_long),
-                    label: const Text("Pregled orders-a"),
+                    label: const Text("Pregled porudzbina"),
                   ),
                 ),
               ],

@@ -3,8 +3,7 @@ import 'package:shoeshop/modals/categories_model.dart';
 import 'package:shoeshop/services/assets_menager.dart';
 
 class AppConstants {
-  static const String imageUrl =
-      'https://www.adidas.com/us/shoes';
+  static const String imageUrl = 'https://www.adidas.com/us/shoes';
 
   static List<String> bannersImages = [
     "${AssetsMenager.imagePath}/banners/shop.jpg",
@@ -12,16 +11,8 @@ class AppConstants {
   ];
 
   static List<CategoriesModel> categoriesList = [
-    CategoriesModel(
-      id: "men",
-      name: "Men",
-      icon: Icons.male,
-    ),
-    CategoriesModel(
-      id: "women",
-      name: "Women",
-      icon: Icons.female,
-    ),
+    CategoriesModel(id: "men", name: "Men", icon: Icons.male),
+    CategoriesModel(id: "women", name: "Women", icon: Icons.female),
   ];
 
   static List<CategoriesModel> menCategoriesList = [
@@ -147,25 +138,59 @@ class AppConstants {
     final extra = meta.type == "stikle"
         ? "peta 10cm"
         : meta.type == "patike"
-            ? "lagane i udobne"
-            : "udobno gaziste";
+        ? "lagane i udobne"
+        : "udobno gaziste";
     return "$colorCap ${meta.type} $materialLabel, $extra.";
   }
 
   static String categoryLabelFromId(String id) {
+    return categoryLabelFromMeta(id: id);
+  }
+
+  static String categoryLabelFromMeta({
+    String? gender,
+    String? type,
+    String? id,
+  }) {
+    final lowerId = id?.toLowerCase() ?? '';
+    final normalizedGender = (gender ?? '').trim().toLowerCase();
+    final normalizedType = (type ?? '').trim().toLowerCase();
+
+    final resolvedGender = normalizedGender.isNotEmpty
+        ? normalizedGender
+        : lowerId.contains("women")
+        ? "women"
+        : lowerId.contains("men")
+        ? "men"
+        : "unisex";
+    final resolvedType = normalizedType.isNotEmpty
+        ? normalizedType
+        : lowerId.contains("heels")
+        ? "heels"
+        : lowerId.contains("sneakers")
+        ? "sneakers"
+        : lowerId.contains("flat")
+        ? "flat"
+        : "shoes";
+
+    final typeLabel = resolvedType == "flat" ? "flats" : resolvedType;
+    return "$resolvedGender-$typeLabel";
+  }
+
+  static String categoryLabelFromLegacyId(String id) {
     final lower = id.toLowerCase();
     final gender = lower.contains("women")
-        ? "Women"
+        ? "women"
         : lower.contains("men")
-            ? "Men"
-            : "Unisex";
+        ? "men"
+        : "unisex";
     final type = lower.contains("heels")
-        ? "Heels"
+        ? "heels"
         : lower.contains("sneakers")
-            ? "Sneakers"
-            : lower.contains("flat")
-                ? "Flats"
-                : "Shoes";
+        ? "sneakers"
+        : lower.contains("flat")
+        ? "flats"
+        : "shoes";
     return "$gender-$type";
   }
 
@@ -198,10 +223,9 @@ class AppConstants {
 
   static String? colorFromId(String id) {
     final lower = id.toLowerCase();
-    final tokens = RegExp(r"[a-z]+")
-        .allMatches(lower)
-        .map((m) => m[0]!)
-        .toList();
+    final tokens = RegExp(
+      r"[a-z]+",
+    ).allMatches(lower).map((m) => m[0]!).toList();
     for (final token in tokens) {
       final color = _colorFromToken(token);
       if (color != null) {
@@ -213,10 +237,9 @@ class AppConstants {
 
   static String? materialTypeFromId(String id) {
     final lower = id.toLowerCase();
-    final tokens = RegExp(r"[a-z]+")
-        .allMatches(lower)
-        .map((m) => m[0]!)
-        .toList();
+    final tokens = RegExp(
+      r"[a-z]+",
+    ).allMatches(lower).map((m) => m[0]!).toList();
     for (final token in tokens) {
       final materialType = _materialTypeFromToken(token);
       if (materialType != null) {
@@ -299,10 +322,15 @@ class AppConstants {
       return _priceFromSeed(id, const [10000, 10500, 11000, 11500, 12000]);
     }
     if (materialType == "skaj" || materialType == "tekstil") {
-      return _priceFromSeed(
-        id,
-        const [7000, 7500, 8000, 8500, 9000, 9500, 10000],
-      );
+      return _priceFromSeed(id, const [
+        7000,
+        7500,
+        8000,
+        8500,
+        9000,
+        9500,
+        10000,
+      ]);
     }
     return _priceFromSeed(id, const [7000, 7500, 8000, 8500, 9000]);
   }
@@ -327,10 +355,9 @@ class AppConstants {
 
     String? color;
     String? materialType;
-    final tokens = RegExp(r"[a-z]+")
-        .allMatches(lower)
-        .map((m) => m[0]!)
-        .toList();
+    final tokens = RegExp(
+      r"[a-z]+",
+    ).allMatches(lower).map((m) => m[0]!).toList();
     for (final token in tokens) {
       color ??= _colorFromToken(token);
       materialType ??= _materialTypeFromToken(token);
@@ -342,10 +369,6 @@ class AppConstants {
       type ??= fallback.type;
       color ??= fallback.color;
       materialType ??= fallback.materialType;
-    }
-
-    if (gender == null || type == null || color == null) {
-      return null;
     }
 
     return _ProductMeta(

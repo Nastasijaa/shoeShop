@@ -7,6 +7,7 @@ import 'package:shoeshop/screens/Home_screen.dart';
 import 'package:shoeshop/screens/cart/cart_screen.dart';
 import 'package:shoeshop/screens/profile_screen.dart';
 import 'package:shoeshop/screens/search_screen.dart';
+import 'package:shoeshop/services/product_integrity_service.dart';
 //stateful jer menja stanje ostali screen su stateless jer ne menjaju druga stanja
 
 class RootScreen extends StatefulWidget {
@@ -18,75 +19,85 @@ class RootScreen extends StatefulWidget {
 }
 
 class _MyWidgetState extends State<RootScreen> {
-  late List <Widget> screens; //late jer znamo da cemo ga sigurno koristiit
-  int currentScreen=0; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
+  late List<Widget> screens; //late jer znamo da cemo ga sigurno koristiit
+  int currentScreen =
+      0; //stavicemo home screen na 0 da bi se uvek otvorio home screen koji je na indexu 0
   late PageController controller;
 
   @override
   void initState() {
     super.initState();
-    screens= const [
+    screens = const [
       //bitan redosled zbog indexa
       HomeScreen(),
       SearchScreen(),
       CartScreen(),
       ProfileScreen(),
-
     ];
-    controller = PageController(initialPage: currentScreen); //na osnovu trenutnog menja
+    controller = PageController(
+      initialPage: currentScreen,
+    ); //na osnovu trenutnog menja
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      ProductIntegrityService.syncMissingProducts(context);
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     final cartProvider = context.watch<CartProvider>();
     return Scaffold(
       body: PageView(
-        physics: const NeverScrollableScrollPhysics(), //da s ene skroluje prstima
+        physics:
+            const NeverScrollableScrollPhysics(), //da s ene skroluje prstima
         controller: controller,
         children: screens,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentScreen,
         height: kBottomNavigationBarHeight,
-        onDestinationSelected: (index){
-        setState(() {
-        currentScreen=index;
-      });
-      controller.jumpToPage(currentScreen);
-      },
-      destinations: [
-        const NavigationDestination(
-          selectedIcon: Icon(
-            IconlyBold.home,
-          ), //da e vidi razlika kada kliknemo na nju boja npr
-          icon: Icon(IconlyLight.home),
-          label: "Home",
-        ),
-        const NavigationDestination(
-          selectedIcon: Icon(
-            IconlyBold.search,
-          ), //da e vidi razlika kada kliknemo na nju boja npr
-          icon: Icon(IconlyLight.search),
-          label: "Search",
-        ),
-        NavigationDestination(
-          selectedIcon: const Icon(IconlyBold.bag2),
-          icon: cartProvider.totalQuantity == 0
-              ? const Icon(IconlyLight.bag2)
-              : Badge(
-                  backgroundColor: AppColors.darkPrimary,
-                  label: Text(cartProvider.totalQuantity.toString()),
-                  child: const Icon(IconlyLight.bag2),
-                ),
-          label: "Cart",
-        ),
-        const NavigationDestination(
-          selectedIcon: Icon(
-            IconlyBold.profile,
-          ), //da e vidi razlika kada kliknemo na nju boja npr
-          icon: Icon(IconlyLight.profile),
-          label: "Profile",
-        ),
-      ],
+        onDestinationSelected: (index) {
+          setState(() {
+            currentScreen = index;
+          });
+          controller.jumpToPage(currentScreen);
+        },
+        destinations: [
+          const NavigationDestination(
+            selectedIcon: Icon(
+              IconlyBold.home,
+            ), //da e vidi razlika kada kliknemo na nju boja npr
+            icon: Icon(IconlyLight.home),
+            label: "Home",
+          ),
+          const NavigationDestination(
+            selectedIcon: Icon(
+              IconlyBold.search,
+            ), //da e vidi razlika kada kliknemo na nju boja npr
+            icon: Icon(IconlyLight.search),
+            label: "Search",
+          ),
+          NavigationDestination(
+            selectedIcon: const Icon(IconlyBold.bag2),
+            icon: cartProvider.totalQuantity == 0
+                ? const Icon(IconlyLight.bag2)
+                : Badge(
+                    backgroundColor: AppColors.darkPrimary,
+                    label: Text(cartProvider.totalQuantity.toString()),
+                    child: const Icon(IconlyLight.bag2),
+                  ),
+            label: "Cart",
+          ),
+          const NavigationDestination(
+            selectedIcon: Icon(
+              IconlyBold.profile,
+            ), //da e vidi razlika kada kliknemo na nju boja npr
+            icon: Icon(IconlyLight.profile),
+            label: "Profile",
+          ),
+        ],
       ),
     );
   }

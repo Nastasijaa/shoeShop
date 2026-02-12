@@ -57,6 +57,7 @@ class HomeScreen extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (_) => CategoryProductsScreen(
                               title: screenTitle,
+                              categoryId: category.id,
                               products: products,
                               categoryImage: category.image,
                             ),

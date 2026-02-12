@@ -25,6 +25,9 @@ class ProductWidget extends StatefulWidget {
     this.price,
     this.displayId,
     this.sizes,
+    this.gender,
+    this.type,
+    this.categoryLabel,
   });
 
   final String productId;
@@ -35,6 +38,9 @@ class ProductWidget extends StatefulWidget {
   final double? price;
   final String? displayId;
   final List<int>? sizes;
+  final String? gender;
+  final String? type;
+  final String? categoryLabel;
 
   @override
   State<ProductWidget> createState() => _ProductWidgetState();
@@ -55,26 +61,29 @@ class _ProductWidgetState extends State<ProductWidget> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final imageHeight = constraints.maxWidth * 0.78;
-          final assetPath = widget.imageAsset ??
-              (widget.productId.startsWith("assets/") ? widget.productId : null);
+          final assetPath =
+              widget.imageAsset ??
+              (widget.productId.startsWith("assets/")
+                  ? widget.productId
+                  : null);
           final networkImage =
               widget.imageUrl != null &&
-                      (widget.imageUrl!.startsWith("http://") ||
-                          widget.imageUrl!.startsWith("https://"))
-                  ? widget.imageUrl!
-                  : null;
+                  (widget.imageUrl!.startsWith("http://") ||
+                      widget.imageUrl!.startsWith("https://"))
+              ? widget.imageUrl!
+              : null;
           final fileImagePath =
               widget.imageUrl != null &&
-                      widget.imageUrl!.isNotEmpty &&
-                      !widget.imageUrl!.startsWith("http://") &&
-                      !widget.imageUrl!.startsWith("https://")
-                  ? widget.imageUrl!
-                  : null;
+                  widget.imageUrl!.isNotEmpty &&
+                  !widget.imageUrl!.startsWith("http://") &&
+                  !widget.imageUrl!.startsWith("https://")
+              ? widget.imageUrl!
+              : null;
           Future<int?> pickSize() async {
             final availableSizes =
                 (widget.sizes != null && widget.sizes!.isNotEmpty)
-                    ? widget.sizes!
-                    : AppConstants.sizesFromId(widget.productId);
+                ? widget.sizes!
+                : AppConstants.sizesFromId(widget.productId);
             return showModalBottomSheet<int>(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               shape: const RoundedRectangleBorder(
@@ -85,12 +94,11 @@ class _ProductWidgetState extends State<ProductWidget> {
               ),
               context: context,
               builder: (context) {
-                return SizeSheetBottomWidget(
-                  sizes: availableSizes,
-                );
+                return SizeSheetBottomWidget(sizes: availableSizes);
               },
             );
           }
+
           return GestureDetector(
             onTap: () async {
               Navigator.pushNamed(
@@ -104,6 +112,9 @@ class _ProductWidgetState extends State<ProductWidget> {
                   imageAsset: widget.imageAsset,
                   imageUrl: widget.imageUrl,
                   sizes: widget.sizes,
+                  gender: widget.gender,
+                  type: widget.type,
+                  categoryLabel: widget.categoryLabel,
                 ),
               );
             },
@@ -116,19 +127,13 @@ class _ProductWidgetState extends State<ProductWidget> {
                     height: imageHeight,
                     width: double.infinity,
                     child: assetPath != null
-                        ? Image.asset(
-                            assetPath,
-                            fit: BoxFit.cover,
-                          )
+                        ? Image.asset(assetPath, fit: BoxFit.cover)
                         : fileImagePath != null
-                            ? Image.file(
-                                File(fileImagePath),
-                                fit: BoxFit.cover,
-                              )
-                            : FancyShimmerImage(
-                                imageUrl: networkImage ?? AppConstants.imageUrl,
-                                boxFit: BoxFit.cover,
-                              ),
+                        ? Image.file(File(fileImagePath), fit: BoxFit.cover)
+                        : FancyShimmerImage(
+                            imageUrl: networkImage ?? AppConstants.imageUrl,
+                            boxFit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 12.0),
@@ -147,7 +152,18 @@ class _ProductWidgetState extends State<ProductWidget> {
                       ),
                       Flexible(
                         flex: 2,
-                        child: HeartButtonWidget(productId: widget.productId),
+                        child: HeartButtonWidget(
+                          productId: widget.productId,
+                          title: displayTitle,
+                          description: displayDescription,
+                          imageAsset: widget.imageAsset,
+                          imageUrl: widget.imageUrl,
+                          price: displayPrice,
+                          sizes: widget.sizes,
+                          gender: widget.gender,
+                          type: widget.type,
+                          categoryLabel: widget.categoryLabel,
+                        ),
                       ),
                     ],
                   ),
@@ -182,60 +198,67 @@ class _ProductWidgetState extends State<ProductWidget> {
                         child: Material(
                           borderRadius: BorderRadius.circular(12.0),
                           color: AppColors.lightPrimary,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12.0),
-                      onTap: () async {
-                        if (await UserPrefs.isGuest()) {
-                          if (!context.mounted) {
-                            return;
-                          }
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12.0),
+                            onTap: () async {
+                              if (await UserPrefs.isGuest()) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Guest users cannot like, add to cart, or purchase. Please log in.",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (!context.mounted) {
+                                return;
+                              }
+                              final size = await pickSize();
+                              if (!context.mounted || size == null) {
+                                return;
+                              }
+                              final stockQty = await StockService.fetchStockQty(
+                                productId: widget.productId,
+                                size: size,
+                              );
+                              if (!context.mounted) {
+                                return;
+                              }
+                              final added = context
+                                  .read<CartProvider>()
+                                  .addItem(
+                                    productId: widget.productId,
+                                    title: displayTitle,
+                                    description: displayDescription,
+                                    price: displayPrice,
+                                    imageUrl:
+                                        widget.imageAsset ??
+                                        widget.imageUrl ??
+                                        AppConstants.imageUrl,
+                                    size: size,
+                                    sizes: widget.sizes,
+                                    gender: widget.gender,
+                                    type: widget.type,
+                                    categoryLabel: widget.categoryLabel,
+                                    maxQuantity: stockQty,
+                                  );
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content: Text(
-                                    "Guest users cannot like, add to cart, or purchase. Please log in.",
+                                    added
+                                        ? "Added to cart"
+                                        : "Ne moze toliko da se doda za izabrani broj.",
                                   ),
                                 ),
                               );
-                              return;
-                        }
-                        if (!context.mounted) {
-                          return;
-                        }
-                        final size = await pickSize();
-                        if (!context.mounted || size == null) {
-                          return;
-                        }
-                        final stockQty = await StockService.fetchStockQty(
-                          productId: widget.productId,
-                          size: size,
-                        );
-                        if (!context.mounted) {
-                          return;
-                        }
-                        final added = context.read<CartProvider>().addItem(
-                              productId: widget.productId,
-                              title: displayTitle,
-                              price: displayPrice,
-                              imageUrl:
-                                  widget.imageAsset ??
-                                  widget.imageUrl ??
-                                  AppConstants.imageUrl,
-                              size: size,
-                              maxQuantity: stockQty,
-                            );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              added
-                                  ? "Added to cart"
-                                  : "Ne moze toliko da se doda za izabrani broj.",
-                            ),
-                          ),
-                        );
-                          },
-                          splashColor: Colors.blueGrey,
-                          child: const Padding(
-                            padding: EdgeInsets.all(6.0),
+                            },
+                            splashColor: Colors.blueGrey,
+                            child: const Padding(
+                              padding: EdgeInsets.all(6.0),
                               child: Icon(Icons.add_shopping_cart_outlined),
                             ),
                           ),

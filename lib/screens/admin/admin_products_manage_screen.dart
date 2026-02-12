@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shoeshop/consts/app_colors.dart';
 import 'package:shoeshop/screens/admin/admin_dashboard_screen.dart';
+import 'package:shoeshop/services/product_integrity_service.dart';
 import 'package:shoeshop/widgets/title_text.dart';
 
 class AdminProductsManageScreen extends StatefulWidget {
@@ -61,16 +62,17 @@ class _AdminProductsManageScreenState extends State<AdminProductsManageScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Proizvod obrisan.")),
-      );
+      ProductIntegrityService.removeDeletedProductFromState(context, productId);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Proizvod obrisan.")));
     } catch (e) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Greska: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Greska: $e")));
     }
   }
 
@@ -83,8 +85,10 @@ class _AdminProductsManageScreenState extends State<AdminProductsManageScreen> {
       return Image.network(
         path,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            const Icon(Icons.broken_image_outlined, color: AppColors.darkPrimary),
+        errorBuilder: (_, __, ___) => const Icon(
+          Icons.broken_image_outlined,
+          color: AppColors.darkPrimary,
+        ),
       );
     }
     return Image.file(
@@ -98,9 +102,7 @@ class _AdminProductsManageScreenState extends State<AdminProductsManageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TitelesTextWidget(label: "Svi proizvodi"),
-      ),
+      appBar: AppBar(title: const TitelesTextWidget(label: "Svi proizvodi")),
       body: Column(
         children: [
           Padding(
@@ -148,8 +150,8 @@ class _AdminProductsManageScreenState extends State<AdminProductsManageScreen> {
                   if (_query.isEmpty) {
                     return true;
                   }
-                  final title =
-                      ((doc.data()['title'] as String?) ?? "").toLowerCase();
+                  final title = ((doc.data()['title'] as String?) ?? "")
+                      .toLowerCase();
                   return title.contains(_query);
                 }).toList();
 
